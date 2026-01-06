@@ -12,10 +12,13 @@ class HomePage extends StatelessWidget {
         title: const Text('Home Page'),
       ),
       body: Center(
-        child: ElevatedButton(onPressed: () async{print(await Ingredients().getAll());}, child: Text("Teste")),
+        child: Column(children: [
+          ElevatedButton(onPressed: () async{Ingredients().delete(2);}, child: Text("Teste")),
+          ElevatedButton(onPressed: () async{print(await Ingredients().getAll());}, child: Text("Verificar"))
+        ],),
       ),
     );
   }
 }
 
-// Ingredients().insert('pimentão', 12.90, 56.90, 2.90, 2.09, 3.10);}
+// Ingredients().insert('pimentão', 12.90, 56.90, 2.90, 2.09, 3.10);
