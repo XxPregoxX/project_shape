@@ -47,6 +47,6 @@ class Ingredients{
   getAll() async{
     final db = await database;
     return await db.query('ingredients');
-  } 
+  }
 
 }
