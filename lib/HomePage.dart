@@ -13,7 +13,7 @@ class HomePage extends StatelessWidget {
       ),
       body: Center(
         child: Column(children: [
-          ElevatedButton(onPressed: () async{Ingredients().delete(2);}, child: Text("Teste")),
+          ElevatedButton(onPressed: () async{Ingredients().insert("batata", 23, 34, 84, 89, 87);}, child: Text("Teste")),
           ElevatedButton(onPressed: () async{print(await Ingredients().getAll());}, child: Text("Verificar"))
         ],),
       ),

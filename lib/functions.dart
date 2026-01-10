@@ -1,37 +1,10 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'dart:convert';
+import 'package:project_shape/db.dart';
 
 class Ingredients{
-    static Database? _database;
-
-    Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
-  }
-
-  Future<Database> _initDatabase() async{
-    final String path = join( await getDatabasesPath(), 'nutrition.db');
-    return await openDatabase( 
-    path,
-    version: 1,
-    onCreate: (db, version) async {
-      return db.execute('''CREATE TABLE ingredients(
-      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-      name TEXT, 
-      price REAL, 
-      calories REAL, 
-      protein REAL, 
-      carbs REAL, 
-      fats REAL, 
-      deleted boolean DEFAULT 0
-      )''');
-    },
-  );
-  }
 
   insert(String name, double price, double calories, double proteins, double carbs, double fats)async{
-    final db = await database;
+    final db = await DatabaseHelper.database;
     await db.insert(
       'ingredients',
       {
@@ -46,7 +19,7 @@ class Ingredients{
   }
 
   Future<void> update(int id, String name, double price, double calories, double proteins, double carbs, double fats) async{
-    final db = await database;
+    final db = await DatabaseHelper.database;
     await db.update(
       'ingredients',
       {
@@ -63,7 +36,7 @@ class Ingredients{
   }
 
   Future<void> delete(int id) async{
-    final db = await database;
+    final db = await DatabaseHelper.database;
     await db.update('ingredients',
     {
       'deleted': 1,
@@ -74,7 +47,7 @@ class Ingredients{
   }
 
   Future<void> restore(int id) async{
-    final db = await database;
+    final db = await DatabaseHelper.database;
     await db.update('ingredients',
     {
       'deleted': 0,
@@ -85,47 +58,70 @@ class Ingredients{
   }
   // função de testes
   getAll() async{
-    final db = await database;
+    final db = await DatabaseHelper.database;
     return await db.query('ingredients');
   }
 
 }
 
 class Meals{
-    static Database? _database;
 
-    Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
-  }
 
-  _initDatabase() async{
-    final String path = join( await getDatabasesPath(), 'nutrition.db');
-    return await openDatabase( 
-    path,
-    version: 1,
-    onCreate: (db, version) async {
-      return db.execute('''CREATE TABLE meals(
-      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-      name TEXT, 
-      ingredients TEXT, 
-      description TEXT,
-      deleted boolean DEFAULT 0
-      )''');
-    },
-  );
-  }
-
-  insert(String name, String ingredients, String description)async{
-    final db = await database;
+  insert(String name, Map<int, double> ingredients, String description)async{
+    final db = await DatabaseHelper.database;
+    final mapStringKey = ingredients.map(
+    (key, value) => MapEntry(key.toString(), value),
+    );
+    final jsoned = jsonEncode(mapStringKey);
     await db.insert(
+      'meals',
+      {
+        'name': name,
+        'ingredients': jsoned,
+        'description': description,
+      }
+    );
+  }
+
+  Future<void> update(int id, String name, String ingredients, String description) async{
+    final db = await DatabaseHelper.database;
+    await db.update(
       'meals',
       {
         'name': name,
         'ingredients': ingredients,
         'description': description,
-      }
+      },
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
+
+  Future<void> delete(int id) async{
+    final db = await DatabaseHelper.database;
+    await db.update('meals',
+    {
+      'deleted': 1,
+    },
+    where: 'id = ?',
+    whereArgs: [id],
+    );
+  }
+
+  Future<void> restore(int id) async{
+    final db = await DatabaseHelper.database;
+    await db.update('meals',
+    {
+      'deleted': 0,
+    },
+    where: 'id = ?',
+    whereArgs: [id],
+    );
+  }
+
+  // função de testes
+  getAll() async{
+    final db = await DatabaseHelper.database;
+    return await db.query('meals');
+    }
 }
