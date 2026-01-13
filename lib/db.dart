@@ -33,6 +33,16 @@ class DatabaseHelper {
       description TEXT,
       deleted boolean DEFAULT 0
       )''');
+        await db.execute('''CREATE TABLE days(
+      day_id TEXT PRIMARY KEY,
+      cost_goal REAL,
+      calories_goal REAL,
+      protein_goal REAL,
+      carbs_goal REAL,
+      fats_goal REAL,
+      consumed TEXT,
+      created_at TEXT
+      )''');
       },
     );
   }
