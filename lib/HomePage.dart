@@ -13,7 +13,7 @@ class HomePage extends StatelessWidget {
       ),
       body: Center(
         child: Column(children: [
-          ElevatedButton(onPressed: () async{Days().addConsumed('20260112', [['Receita', 1, 0.1], ['Ingrediente', 1, 0.5]]);}, child: Text("Teste")),
+          ElevatedButton(onPressed: () async{Days().add_days();}, child: Text("Teste")),
           ElevatedButton(onPressed: () async{print(await Days().getAll());}, child: Text("Verificar"))
         ],),
       ),
@@ -23,3 +23,4 @@ class HomePage extends StatelessWidget {
 
 // Ingredients().insert('pimentão', 12.90, 56.90, 2.90, 2.09, 3.10);
 // ElevatedButton(onPressed: () async{Ingredients().insert("batata", 23, 34, 84, 89, 87);}, child: Text("Teste"))
+// Days().addConsumed('20260112', [['Receita', 1, 0.1], ['Ingrediente', 1, 0.5]]);

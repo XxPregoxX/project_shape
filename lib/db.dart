@@ -43,6 +43,21 @@ class DatabaseHelper {
       consumed TEXT,
       created_at TEXT
       )''');
+        await db.execute('''CREATE TABLE profile(
+      id INTEGER PRIMARY KEY,
+      name TEXT,
+      height REAL,
+      birth_date TEXT
+      )''');
+        await db.execute('''CREATE TABLE IF NOT EXISTS goals(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      cost REAL,
+      calories REAL,
+      protein REAL,
+      carbs REAL,
+      fats REAL,
+      created_at TEXT
+      )''');
       },
     );
   }

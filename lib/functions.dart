@@ -156,9 +156,11 @@ class Days{
   return a.difference(b).inDays;
  }
 add_days() async {
+ Map<String, dynamic>? goals = await Profile().getCurrentGoals();
+ if (goals == null) return;
  if (await isTableEmpty()){
    String today = normalize(DateTime.now()).toString().split(' ').first.replaceAll('-', '');
-   insert(today, 1, 1, 1, 1, 1, DateTime.now().toIso8601String()); // depois que tiver os goals ajustar aq
+   insert(today, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], DateTime.now().toIso8601String()); // depois que tiver os goals ajustar aq
  } else {
     Map<String, dynamic>? lastDay = await getLastDay();
     DateTime lastDate = DateTime.parse(lastDay!['created_at']);
@@ -166,7 +168,7 @@ add_days() async {
     for (int i = 1; i <= diff; i++){
       DateTime newDate = lastDate.add(Duration(days: i));
       String dayId = normalize(newDate).toString().split(' ').first.replaceAll('-', '');
-      insert(dayId, 1, 1, 1, 1, 1, newDate.toIso8601String()); // depois que tiver os goals ajustar aq
+      insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String()); // depois que tiver os goals ajustar aq
     }
  }
  return;
@@ -210,5 +212,59 @@ Future<Map<String, dynamic>?> getLastDay() async {
     whereArgs: [id],
     );
   }
-
 } 
+
+  class Profile{
+  insert(String name, double height, String birthDate)async{
+    final db = await DatabaseHelper.database;
+    await db.insert(
+      'profile',
+      {
+        'id': 1, // id do usuario sempre 1 pq so tem 1 perfil
+        'name': name,
+        'height': height,
+        'birth_date': birthDate,
+      }
+    );
+  }
+
+  Future<void> update(String name, double height, String birthDate) async{
+    final db = await DatabaseHelper.database;
+    await db.update(
+      'profile',
+      {
+        'name': name,
+        'height': height,
+        'birth_date': birthDate,
+      },
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+  }
+
+  goalInsert(double cost, double calories, double protein, double carbs, double fats) async {
+    final db = await DatabaseHelper.database;
+    final now = DateTime.now();
+    await db.insert(
+      'goals',
+      {
+        'cost': cost,
+        'calories': calories,
+        'protein': protein,
+        'carbs': carbs,
+        'fats': fats,
+        'created_at': now.toIso8601String(),
+      }
+    );
+  }
+  getCurrentGoals() async {
+    final db = await DatabaseHelper.database;
+    final result = await db.query(
+      'goals',
+      orderBy: 'created_at DESC',
+      limit: 1,
+    );
+    if (result.isEmpty) return null;
+    return result.first;
+  }
+}
