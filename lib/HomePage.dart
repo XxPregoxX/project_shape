@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_shape/GeneralWidgets.dart';
 import 'package:project_shape/functions.dart';
 
 
@@ -7,15 +8,20 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Page'),
-      ),
       body: Center(
-        child: Column(children: [
-          ElevatedButton(onPressed: () async{Days().add_days();}, child: Text("Teste")),
-          ElevatedButton(onPressed: () async{print(await Days().getAll());}, child: Text("Verificar"))
-        ],),
+        child: SizedBox(
+          width: screenWidth * 0.8,
+          child: Column(children: [
+            search_bar('Pesquisar'),
+            recipe_card('Receita 1'),
+            recipe_card('Receita 2'),
+            recipe_card('Receita 3'),
+            recipe_card('Receita 4'),
+            recipe_card('Receita 5'),
+          ],),
+        ),
       ),
     );
   }
