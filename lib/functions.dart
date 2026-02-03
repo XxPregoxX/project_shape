@@ -57,40 +57,72 @@ class Ingredients{
     whereArgs: [id],
     );
   }
-  // função de testes
-  getAll() async{
+
+  Future<List<Map<String, dynamic>>> fetchIngredients({
+  required int limit,
+  required int offset,
+}) async {
+  final db = await DatabaseHelper.database;
+
+  return await db.query(
+    'ingredients',
+    orderBy: 'id',
+    limit: limit,
+    offset: offset,
+  );
+}
+
+getAllNonDeleted() async{
     final db = await DatabaseHelper.database;
-    return await db.query('ingredients');
+    return await db.query('ingredients', where: 'deleted = 0');
+  }
+
+  getByid(int id) async{
+    final db = await DatabaseHelper.database;
+    return await db.query(
+    'ingredients',
+    where: 'id = $id',
+  );
   }
 
 }
 
-class Meals{
+class Recipes{
 
 
-  insert(String name, Map<int, double> ingredients, String description)async{
+  insert(String name, Map<int, double> ingredients, String description, double price, double calories, double protein, double carbs, double fats)async{
     final db = await DatabaseHelper.database;
     final mapStringKey = ingredients.map(
     (key, value) => MapEntry(key.toString(), value),
     );
     final jsoned = jsonEncode(mapStringKey);
     await db.insert(
-      'meals',
+      'recipes',
       {
         'name': name,
         'ingredients': jsoned,
+        'price': price, 
+        'calories': calories, 
+        'protein': protein, 
+        'carbs': carbs, 
+        'fats': fats,
         'description': description,
       }
     );
   }
 
-  Future<void> update(int id, String name, String ingredients, String description) async{
+  Future<void> update(int id, String name, String ingredients, String description, double price, double calories, double protein, double carbs, double fats) async{
     final db = await DatabaseHelper.database;
     await db.update(
-      'meals',
+      'recipes',
       {
         'name': name,
         'ingredients': ingredients,
+        'price': price, 
+        'calories': calories, 
+        'protein': protein, 
+        'carbs': carbs, 
+        'fats': fats,
         'description': description,
       },
       where: 'id = ?',
@@ -100,7 +132,7 @@ class Meals{
 
   Future<void> delete(int id) async{
     final db = await DatabaseHelper.database;
-    await db.update('meals',
+    await db.update('recipes',
     {
       'deleted': 1,
     },
@@ -111,7 +143,7 @@ class Meals{
 
   Future<void> restore(int id) async{
     final db = await DatabaseHelper.database;
-    await db.update('meals',
+    await db.update('recipes',
     {
       'deleted': 0,
     },
@@ -123,7 +155,7 @@ class Meals{
   // função de testes
   getAll() async{
     final db = await DatabaseHelper.database;
-    return await db.query('meals');
+    return await db.query('recipes');
     }
 }
 

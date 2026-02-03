@@ -23,6 +23,17 @@ class HomePage extends StatelessWidget {
           ],),
         ),
       ),
+      floatingActionButton: Container(
+        height: 50,
+        width: 50,
+        child: FloatingActionButton(onPressed: (){
+          Navigator.pushNamed(context, '/add_recipe');
+        }, 
+        child: Icon(Icons.add),
+        shape: CircleBorder(),
+        heroTag: null,
+            ),
+      ),
     );
   }
 }

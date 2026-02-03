@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/functions.dart';
 
 search_bar(String hint){
@@ -65,7 +66,13 @@ recipe_card(String name){
   ); 
 }
 
-ingredient_card(String ingredient){
+ingredient_card(Map<String, dynamic> ingredients){
+  String name = ingredients['name'];
+  double calories = ingredients['calories']; 
+  double protein = ingredients['protein'];
+  double carbs = ingredients['carbs'];
+  double fats = ingredients['fats'];
+  double price = ingredients['price'];
   return  Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
@@ -75,7 +82,7 @@ ingredient_card(String ingredient){
       ),
       child: Column(
         children: [
-          Text(ingredient, style: TextStyle(
+          Text('$name $price R\$', style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),),
@@ -83,16 +90,16 @@ ingredient_card(String ingredient){
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Kcal', style: TextStyle(
+              Text('Kcal: $calories', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Prot', style: TextStyle(
+              Text('Prot: $protein', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Carb', style: TextStyle(
+              Text('Carb: $carbs', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Gord', style: TextStyle(
+              Text('Gord: $fats', style: TextStyle(
                 fontSize: 15
               ),),
             ],
@@ -181,6 +188,7 @@ confirmar_button(String text, VoidCallback onPressed){
   );
 }
 
+// isso tem que ser um stateful widget
 add_ingredient_form(BuildContext context){
   final _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
@@ -189,6 +197,7 @@ add_ingredient_form(BuildContext context){
   final TextEditingController protController = TextEditingController();
   final TextEditingController fatController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
+  // Todos os controllers acime não estão sendo descartados, o que pode causar memory leaks em uso prolongado.
   return Form(
     key: _formKey,
     child: Column(
@@ -211,9 +220,8 @@ add_ingredient_form(BuildContext context){
       double price = double.parse(priceController.text);
       String name = nameController.text;
       Ingredients().insert(name, price, kcal, prot, carb, fat);
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     } else {
-      // algum campo cagou
       print('Form inválido');
     }
         }),
@@ -221,3 +229,174 @@ add_ingredient_form(BuildContext context){
     ),
   );
 }
+
+class AddRecipeForm extends StatefulWidget {
+  const AddRecipeForm({super.key});
+
+  @override
+  State<AddRecipeForm> createState() => _AddRecipeForm();
+}
+
+class _AddRecipeForm extends State<AddRecipeForm> {
+  late Future<dynamic> _future;
+  List selecteds = [];
+  final TextEditingController nameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _future = Ingredients().getAllNonDeleted();
+  }
+
+  void reload() {
+    setState(() {
+      _future = Ingredients().getAllNonDeleted();
+    });
+  }
+
+  void select_ingredient(SelectedIngredient valor) {
+    if (!selecteds.any((e) => e.id == valor.id)) {
+      setState(() {
+        selecteds.add(valor);
+      });
+    }
+  }
+
+  void submit_recipe(String name) async{
+      double price = 0;
+      double calories = 0;
+      double protein = 0;
+      double carbs = 0;
+      double fats = 0;
+      for (final item in selecteds){
+      double fator = int.parse(item.controller.text) / 1000;
+      await Ingredients().getByid(item.id).then((ingredientData) {
+        price += ingredientData[0]['price'] * fator;
+        calories += ingredientData[0]['calories'] * fator;
+        protein += ingredientData[0]['protein'] * fator;
+        carbs += ingredientData[0]['carbs'] * fator;
+        fats += ingredientData[0]['fats'] * fator;});
+      };
+      price = double.parse(price.toStringAsFixed(2));
+      calories = double.parse(calories.toStringAsFixed(2));
+      protein = double.parse(protein.toStringAsFixed(2)); 
+      carbs = double.parse(carbs.toStringAsFixed(2));
+      fats = double.parse(fats.toStringAsFixed(2));
+    print(name);
+    print('Price: $price Calories: $calories Protein: $protein, Carbs: $carbs Fats: $fats');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          general_textfield(label: 'Nome da receita', controler: nameController),
+          SizedBox(height: 20),
+          FutureBuilder(future: _future, builder: 
+          (context, snapshot){
+          if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+          } 
+
+          dynamic ingredientes = snapshot.data!;
+          return Column(
+          children: [
+          IngredientList(onAddIngredient: (valor) => select_ingredient(valor), ingredients: ingredientes),
+          SizedBox(height: 20),
+          ...selecteds.map((e) => ingredient_added_row(e.name, e.controller, MediaQuery.of(context).size.width * 0.3)).toList(),
+            ],);
+          }),
+
+          confirmar_button('Confirmar', () {
+            if (selecteds.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Adicione pelo menos um ingrediente'),
+                ),
+              );
+              return;
+            }
+            if (_formKey.currentState!.validate()) {
+              // tudo válido
+              submit_recipe(nameController.text);
+            } 
+
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+
+class IngredientList extends StatelessWidget {
+  final void Function(SelectedIngredient valor) onAddIngredient;
+  final List ingredients;
+
+  IngredientList({required this.onAddIngredient, required this.ingredients});
+
+
+    Widget build(BuildContext context){
+      int ingredients_number = ingredients.length;
+      return Column(
+      children: [
+        DropdownButtonFormField<int>(
+        decoration: InputDecoration(
+          labelText: 'Ingrediente',
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+        ),
+        items: List.generate(ingredients_number, (index) {
+          return DropdownMenuItem<int>(
+            value: index,
+            child: Text(ingredients[index]['name']),
+          );
+        }),
+        onChanged: (value) {
+          onAddIngredient(SelectedIngredient(id: ingredients[value!]['id'], name: ingredients[value]['name']));
+        },
+          ),
+      ],
+    );
+}
+}
+
+ingredient_added_row(String name, TextEditingController controller, size){
+  return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+          child: Text(name, style: TextStyle(
+            fontSize: 18,
+          ),),
+        ),
+        SizedBox(
+          width: size,
+          child: general_textfield(label: 'Quantidade (g)', controler: controller, digitOnly: true),
+        ),
+      ],
+    );
+}
+
+class SelectedIngredient {
+  final int id;
+  final String name;
+  final TextEditingController controller;
+
+  SelectedIngredient({
+    required this.id,
+    required this.name,
+  }) : controller = TextEditingController();
+}
+
+

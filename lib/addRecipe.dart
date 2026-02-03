@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
 
-class add_ingredient extends StatefulWidget {
-  const add_ingredient({super.key});
+class add_recipe extends StatefulWidget {
+  const add_recipe({super.key});
 
   @override
-  State<add_ingredient> createState() => _add_ingredientState();
+  State<add_recipe> createState() => _add_recipeState();
 }
 
-class _add_ingredientState extends State<add_ingredient> {
+class _add_recipeState extends State<add_recipe> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
+        title: Text('Add Recipe Page'),
       ),
       body: Center(
         child: Container(
           width: screenWidth * 0.8,
           child: Column(
             children: [
-              Icon(Icons.eco, size: 200),
-              add_ingredient_form(context)
+              Icon(Icons.restaurant, size: 200),
+              AddRecipeForm(),
             ],
           ),
         ),

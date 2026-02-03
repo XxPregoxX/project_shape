@@ -26,10 +26,15 @@ class DatabaseHelper {
       fats REAL, 
       deleted boolean DEFAULT 0
       )''');
-        await db.execute('''CREATE TABLE meals(
+        await db.execute('''CREATE TABLE recipes(
       id INTEGER PRIMARY KEY AUTOINCREMENT, 
       name TEXT, 
       ingredients TEXT, 
+      price REAL, 
+      calories REAL, 
+      protein REAL, 
+      carbs REAL, 
+      fats REAL,
       description TEXT,
       deleted boolean DEFAULT 0
       )''');
