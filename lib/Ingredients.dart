@@ -11,7 +11,7 @@ class ingredients extends StatefulWidget {
 
 class _ingredientsState extends State<ingredients> {
     List<Map<String, dynamic>> ingredients = [];
-    int limit = 20;
+    int limit = 10;
     int offset = 0;
     bool isLoading = false;
     bool hasMore = true;
@@ -19,7 +19,7 @@ class _ingredientsState extends State<ingredients> {
     Future<void> loadMore() async {
         if (isLoading || !hasMore) return;
 
-        isLoading = true;
+        setState(() {isLoading = true;});
 
         final newItems = await Ingredients().fetchIngredients(
           limit: limit,
@@ -33,21 +33,33 @@ class _ingredientsState extends State<ingredients> {
           offset += limit;
         }
 
-        isLoading = false;
-        setState(() {});
+
+        setState(() {isLoading = false;});
     }
 
     @override
     void initState() {
       super.initState();
-      loadMore();
       _controller.addListener(() {
         if (_controller.position.pixels >=
-            _controller.position.maxScrollExtent - 200) {
+            _controller.position.maxScrollExtent - 100) {
           loadMore();
         }
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    _ensureScrollable();
+    });
     }
+
+    Future<void> _ensureScrollable() async {
+  if (!_controller.hasClients) return;
+
+  while (_controller.position.maxScrollExtent == 0 && hasMore && !isLoading) {
+    await loadMore();
+    await Future.delayed(const Duration(milliseconds: 16)); // deixa o frame respirar
+  }
+  } 
 
     Future<void> goToAddIngredient() async {
     final result = await Navigator.pushNamed(context, '/add_ingredient');
@@ -71,7 +83,7 @@ class _ingredientsState extends State<ingredients> {
             Expanded(
               child: ListView.builder(
                 controller: _controller,
-                itemCount: ingredients.length + (hasMore ? 1 : 0),
+                itemCount: ingredients.length + (isLoading ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index < ingredients.length) {
                     final item = ingredients[index];

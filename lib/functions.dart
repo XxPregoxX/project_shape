@@ -61,7 +61,7 @@ class Ingredients{
   Future<List<Map<String, dynamic>>> fetchIngredients({
   required int limit,
   required int offset,
-}) async {
+  }) async {
   final db = await DatabaseHelper.database;
 
   return await db.query(
@@ -70,9 +70,9 @@ class Ingredients{
     limit: limit,
     offset: offset,
   );
-}
+  }
 
-getAllNonDeleted() async{
+  getAllNonDeleted() async{
     final db = await DatabaseHelper.database;
     return await db.query('ingredients', where: 'deleted = 0');
   }
@@ -150,6 +150,20 @@ class Recipes{
     where: 'id = ?',
     whereArgs: [id],
     );
+  }
+
+    Future<List<Map<String, dynamic>>> fetchRecipes({
+  required int limit,
+  required int offset,
+  }) async {
+  final db = await DatabaseHelper.database;
+
+  return await db.query(
+    'recipes',
+    orderBy: 'id',
+    limit: limit,
+    offset: offset,
+  );
   }
 
   // função de testes

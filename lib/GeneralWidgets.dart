@@ -90,16 +90,16 @@ ingredient_card(Map<String, dynamic> ingredients){
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Kcal: $calories', style: TextStyle(
+              Text('Kcal: ${calories.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Prot: $protein', style: TextStyle(
+              Text('Prot: ${protein.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Carb: $carbs', style: TextStyle(
+              Text('Carb: ${carbs.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Gord: $fats', style: TextStyle(
+              Text('Gord: ${fats.round()}', style: TextStyle(
                 fontSize: 15
               ),),
             ],
@@ -156,6 +156,37 @@ general_textfield({ required String label, required TextEditingController contro
         borderSide: BorderSide(color: Colors.white),
         borderRadius: BorderRadius.circular(16),
       ),
+    ),
+  );
+}
+
+value_textfield({ required String label, required TextEditingController controler}){
+  return TextFormField(
+    controller: controler,
+    validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Campo obrigatório';
+          }else if (double.tryParse(value) == null) {
+            return 'Campo deve ser numérico';
+          }
+          return null;
+          },
+    keyboardType:TextInputType.number,
+    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+    decoration: InputDecoration(
+      labelText: label,
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      contentPadding: EdgeInsets.symmetric(
+      horizontal: 3,
+      vertical: 5,
+    ),
     ),
   );
 }
@@ -241,6 +272,7 @@ class _AddRecipeForm extends State<AddRecipeForm> {
   late Future<dynamic> _future;
   List selecteds = [];
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController obsController = TextEditingController();
 
   @override
   void initState() {
@@ -262,7 +294,8 @@ class _AddRecipeForm extends State<AddRecipeForm> {
     }
   }
 
-  void submit_recipe(String name) async{
+  void submit_recipe(String name, String Observation) async{
+      Map<int, double> ingredients = {};
       double price = 0;
       double calories = 0;
       double protein = 0;
@@ -276,14 +309,16 @@ class _AddRecipeForm extends State<AddRecipeForm> {
         protein += ingredientData[0]['protein'] * fator;
         carbs += ingredientData[0]['carbs'] * fator;
         fats += ingredientData[0]['fats'] * fator;});
+      ingredients[item.id] = double.parse(item.controller.text);
       };
+      
       price = double.parse(price.toStringAsFixed(2));
       calories = double.parse(calories.toStringAsFixed(2));
       protein = double.parse(protein.toStringAsFixed(2)); 
       carbs = double.parse(carbs.toStringAsFixed(2));
       fats = double.parse(fats.toStringAsFixed(2));
-    print(name);
-    print('Price: $price Calories: $calories Protein: $protein, Carbs: $carbs Fats: $fats');
+    await Recipes().insert(name, ingredients, Observation, price, calories, protein, carbs, fats);
+    Navigator.pop(context, true);
   }
 
   @override
@@ -308,10 +343,46 @@ class _AddRecipeForm extends State<AddRecipeForm> {
           children: [
           IngredientList(onAddIngredient: (valor) => select_ingredient(valor), ingredients: ingredientes),
           SizedBox(height: 20),
-          ...selecteds.map((e) => ingredient_added_row(e.name, e.controller, MediaQuery.of(context).size.width * 0.3)).toList(),
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white, // cor da borda
+                  width: 1,            // espessura
+                ),
+              ),
+            ),
+            height: MediaQuery.of(context).size.height * 0.15,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ...selecteds.map((e) => ingredient_added_row(e.name, e.controller, MediaQuery.of(context).size.width * 0.2)).toList(),
+                ],
+              ),
+            )
+            ,
+          )
+          
             ],);
           }),
-
+          SizedBox(height: 20),
+          Container(child: TextFormField(
+            controller: obsController,
+            maxLines: 7,
+            decoration: InputDecoration(
+              labelText: 'Observações',
+              alignLabelWithHint: true,
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            )
+          ),),
+          SizedBox(height: 20),
           confirmar_button('Confirmar', () {
             if (selecteds.isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -323,7 +394,7 @@ class _AddRecipeForm extends State<AddRecipeForm> {
             }
             if (_formKey.currentState!.validate()) {
               // tudo válido
-              submit_recipe(nameController.text);
+              submit_recipe(nameController.text, obsController.text);
             } 
 
           }),
@@ -371,21 +442,25 @@ class IngredientList extends StatelessWidget {
 }
 
 ingredient_added_row(String name, TextEditingController controller, size){
-  return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
-          child: Text(name, style: TextStyle(
-            fontSize: 18,
-          ),),
-        ),
-        SizedBox(
-          width: size,
-          child: general_textfield(label: 'Quantidade (g)', controler: controller, digitOnly: true),
-        ),
-      ],
-    );
+  return Container(
+    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+    child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: Text(name, style: TextStyle(
+              fontSize: 20,
+            ),),
+          ),
+          SizedBox(
+            width: size,
+            height: 45,
+            child: value_textfield(label: 'Peso (g)', controler: controller),
+          ),
+        ],
+      ),
+  );
 }
 
 class SelectedIngredient {
