@@ -100,12 +100,16 @@ class _ingredientsState extends State<ingredients> {
           ],),
         ),
       ),
-      floatingActionButton: FloatingActionButton(onPressed: (){
-        goToAddIngredient();
-      }, 
-      child: Icon(Icons.add),
-      shape: CircleBorder(),
-    ),
+      floatingActionButton: Container(
+        height: 50,
+        width: 50,
+        child: FloatingActionButton(onPressed: (){
+          goToAddIngredient();
+        }, 
+        child: Icon(Icons.add),
+        shape: CircleBorder(),
+            ),
+      ),
     );
   }
 }

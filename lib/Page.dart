@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_shape/HomePage.dart';
+import 'package:project_shape/Recipes.dart';
 import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/days.dart';
 import 'package:project_shape/profile.dart';
@@ -13,7 +13,7 @@ class _MainLayoutState extends State<MainLayout> {
   int _index = 0;
 
   final pages = [
-    HomePage(),
+    recipes(),
     ingredients(),
     days(),
     profile(),

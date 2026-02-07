@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/AddIngredient.dart';
-import 'package:project_shape/HomePage.dart';
+import 'package:project_shape/Recipes.dart';
 import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/Page.dart';
 import 'package:project_shape/addRecipe.dart';
 import 'package:project_shape/days.dart';
+import 'package:project_shape/recipe.dart';
 import 'package:project_shape/profile.dart';
 
 void main() {
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => MainLayout(),
-        '/meals': (context) => HomePage(),  
+        '/meals': (context) => recipes(),
         '/add_recipe': (context) => add_recipe(),
         '/ingredients': (context) => ingredients(),
         '/add_ingredient': (context) => add_ingredient(),

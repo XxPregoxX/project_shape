@@ -2,6 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/functions.dart';
+import 'package:project_shape/recipe.dart';
+
+Widget titleText(String text) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
+}
+
+Widget infoText(String label, String value) {
+  return RichText(
+    text: TextSpan(
+      style: const TextStyle(
+        fontSize: 20,
+        color: Colors.white,
+      ),
+      children: [
+        TextSpan(
+          text: '$label ',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        TextSpan(
+          text: value,
+          style: const TextStyle(
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 search_bar(String hint){
            return Container(
@@ -22,10 +62,16 @@ search_bar(String hint){
            );
 }
 
-recipe_card(String name){
+recipe_card(BuildContext context, Map<String, dynamic> Recipe){
+  String name = Recipe['name'];
+  double calories = Recipe['calories']; 
+  double protein = Recipe['protein'];
+  double carbs = Recipe['carbs'];
+  double fats = Recipe['fats'];
+  double price = Recipe['price'];
   return GestureDetector(
     onTap: () {
-      
+      Navigator.push(context, MaterialPageRoute(builder: (context) => recipe(Recipe: Recipe)));
     },
     child: Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 3),
@@ -38,7 +84,7 @@ recipe_card(String name){
       ),
       child: Column(
         children: [
-          Text(name, style: TextStyle(
+          Text('$name $price R\$', style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),),
@@ -46,16 +92,16 @@ recipe_card(String name){
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Kcal', style: TextStyle(
+              Text('Kcal: ${calories.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Prot', style: TextStyle(
+              Text('Prot: ${protein.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Carb', style: TextStyle(
+              Text('Carb: ${carbs.round()}', style: TextStyle(
                 fontSize: 15
               ),),
-              Text('Gord', style: TextStyle(
+              Text('Gord: ${fats.round()}', style: TextStyle(
                 fontSize: 15
               ),),
             ],
@@ -66,13 +112,13 @@ recipe_card(String name){
   ); 
 }
 
-ingredient_card(Map<String, dynamic> ingredients){
-  String name = ingredients['name'];
-  double calories = ingredients['calories']; 
-  double protein = ingredients['protein'];
-  double carbs = ingredients['carbs'];
-  double fats = ingredients['fats'];
-  double price = ingredients['price'];
+ingredient_card(Map<String, dynamic> ingredient){
+  String name = ingredient['name'];
+  double calories = ingredient['calories']; 
+  double protein = ingredient['protein'];
+  double carbs = ingredient['carbs'];
+  double fats = ingredient['fats'];
+  double price = ingredient['price'];
   return  Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
