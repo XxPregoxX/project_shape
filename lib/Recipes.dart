@@ -15,7 +15,6 @@ class _recipesState extends State<recipes> {
   Future<void> goToAddRecipe() async {
     final result = await Navigator.pushNamed(context, '/add_recipe');
     if (result == true) {
-      print('algo');
       setState(() {});
     }
     }
@@ -30,7 +29,7 @@ class _recipesState extends State<recipes> {
           child: Column(children: [
             search_bar('Pesquisar'),
             Expanded(
-                child: FutureBuilder(future: Recipes().getAll(), builder: (context, snapshot){
+                child: FutureBuilder(future: Recipes().getAllNonDeleted(), builder: (context, snapshot){
                   if(snapshot.connectionState == ConnectionState.waiting){
                     return Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError){

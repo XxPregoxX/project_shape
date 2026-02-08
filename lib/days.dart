@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
+import 'package:project_shape/functions.dart';
 
 class days extends StatefulWidget {
   const days({super.key});
@@ -16,12 +17,21 @@ class _daysState extends State<days> {
       body: Center(
         child: SizedBox(
           width: screenWidth * 0.8,
-          child: Column(children: [
-            SizedBox(height: 40),
-            day_card('2024-01-01'),
-            day_card('2024-01-02'),
-            day_card('2024-01-03'),
-          ],),
+          child: FutureBuilder(future: Days().getAll(), builder: (context, snapshot){
+            if(snapshot.hasData){
+              
+              List<Map<String, dynamic>> days = snapshot.data as List<Map<String, dynamic>>;
+              return ListView.builder(
+                itemCount: days.length,
+                itemBuilder: (context, index){
+                  var day = days[index];
+                  return day_card(context, day);
+                },
+              );
+            }else{
+              return const CircularProgressIndicator();
+            }
+          }),
         ),
       ),
     );

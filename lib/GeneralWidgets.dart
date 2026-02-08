@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_shape/Ingredients.dart';
+import 'package:project_shape/day.dart';
 import 'package:project_shape/functions.dart';
 import 'package:project_shape/recipe.dart';
 
@@ -155,27 +156,146 @@ ingredient_card(Map<String, dynamic> ingredient){
     );
 }
 
-day_card(String day){
-  return Container(
-    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-    margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
-    width: double.infinity,
-    decoration: BoxDecoration(
-      color: Color(0xFF323232),
+day_card(context, Map<String, dynamic> cardDay){
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDay)));
+    },
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Color(0xFF323232),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(Days().dayIdToDate(cardDay['day_id']), style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),),
+          Text('Calorias: 923', style: TextStyle(
+            fontSize: 18,
+          ),)
+        ],
+      )
     ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(day, style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),),
-        Text('Calorias: 923', style: TextStyle(
-          fontSize: 18,
-        ),)
-      ],
-    )
+  );
+}
+
+getIngredientsAndRecipes() async {
+  List ingredients = await Ingredients().getAllNonDeleted();
+  List recipes = await Recipes().getAllNonDeleted();
+  return ingredients + recipes;
+  
+}
+
+AddConsumed(BuildContext context, String day_id) {
+  final controller = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  Map selected = {};
+  
+
+  return showDialog(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        title: Text('Nome'),
+        content: FutureBuilder(future: getIngredientsAndRecipes(), builder: (context, snapshot){
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError) {
+            return Text('Erro ao carregar ingredientes e receitas');
+          } else {
+            List items = snapshot.data as List;
+            return Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<int>(
+                    decoration: InputDecoration(
+                      labelText: 'Selecione',
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                    ),
+                    items: List.generate(items.length, (index) {
+                      return DropdownMenuItem<int>(
+                        value: index,
+                        child: Text(items[index]['name']),
+                      );
+                    }),
+                      validator: (value) {
+                        if (value == null) return 'Selecione um ingrediente';
+                        return null;
+                      },
+                    onChanged: (value) {
+                      selected = items[value!];
+                    },
+                  ),
+                  general_textfield(label: 'Quantidade (g)', controler: controller)
+                ],
+              ),
+            );
+          }
+        }),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                Days().addConsumed(day_id, selected, double.parse(controller.text)).then((_) {
+                  Navigator.pop(context, true);
+                });
+              }
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+day_grid(Map day){
+  
+  Widget gridblock(double child){ 
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white),
+      ),
+      child: Text(child.toString(), 
+        style: TextStyle(
+            fontSize: 18,
+          ),
+        ),
+      );
+  }
+
+  return Column(
+    children: [
+      Row(
+        children: [
+          gridblock(day['calories_goal']),
+          gridblock(day['protein_goal']),
+          gridblock(day['carbs_goal']),
+          gridblock(day['fats_goal'])
+        ],
+      ),
+      Row(
+        children: [
+          gridblock(day['calories_consumed']),
+          gridblock(day['protein_consumed']),
+          gridblock(day['carbs_consumed']),
+          gridblock(day['fats_consumed'])
+        ],
+      ),
+    ],
   );
 }
 
@@ -387,7 +507,7 @@ class _AddRecipeForm extends State<AddRecipeForm> {
           dynamic ingredientes = snapshot.data!;
           return Column(
           children: [
-          IngredientList(onAddIngredient: (valor) => select_ingredient(valor), ingredients: ingredientes),
+          GeneralDropdown(onAddIngredient: (valor) => select_ingredient(valor), ingredients: ingredientes),
           SizedBox(height: 20),
           Container(
             decoration: BoxDecoration(
@@ -451,11 +571,11 @@ class _AddRecipeForm extends State<AddRecipeForm> {
 }
 
 
-class IngredientList extends StatelessWidget {
+class GeneralDropdown extends StatelessWidget {
   final void Function(SelectedIngredient valor) onAddIngredient;
   final List ingredients;
 
-  IngredientList({required this.onAddIngredient, required this.ingredients});
+  GeneralDropdown({required this.onAddIngredient, required this.ingredients});
 
 
     Widget build(BuildContext context){

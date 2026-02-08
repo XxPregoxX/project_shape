@@ -166,6 +166,11 @@ class Recipes{
   );
   }
 
+  getAllNonDeleted() async{
+    final db = await DatabaseHelper.database;
+    return await db.query('recipes', where: 'deleted = 0');
+  }
+
   // função de testes
   getAll() async{
     final db = await DatabaseHelper.database;
@@ -187,6 +192,10 @@ class Days{
         'protein_goal': proteinGoal,
         'carbs_goal': carbsGoal,
         'fats_goal': fatsGoal,
+        'calories_consumed': 0,
+        'protein_consumed': 0,
+        'carbs_consumed': 0,
+        'fats_consumed': 0,
         'consumed': '',
         'created_at': now.toIso8601String(),
       }
@@ -201,8 +210,28 @@ class Days{
   b = normalize(b);
   return a.difference(b).inDays;
  }
+
+ String dayIdToDate(dynamic dayId) {
+  final s = dayId.toString();
+
+  final year = s.substring(0, 4);
+  final month = s.substring(4, 6);
+  final day = s.substring(6, 8);
+
+  return '$day/$month/$year';
+}
+ 
 add_days() async {
- Map<String, dynamic>? goals = await Profile().getCurrentGoals();
+ //Map<String, dynamic>? goals = await Profile().getCurrentGoals();
+
+ Map<String, dynamic>? goals = {
+    'cost': 20.5,
+    'calories': 2200.0,
+    'protein': 150.0,
+    'carbs': 250.0,
+    'fats': 70.0,
+  }; // tirar isso depois, so pra testar a função
+
  if (goals == null) return;
  if (await isTableEmpty()){
    String today = normalize(DateTime.now()).toString().split(' ').first.replaceAll('-', '');
@@ -235,32 +264,57 @@ add_days() async {
     return await db.query('days');
     }
 
-Future<Map<String, dynamic>?> getLastDay() async {
-  final db = await DatabaseHelper.database;
+  Future<Map<String, dynamic>?> getLastDay() async {
+    final db = await DatabaseHelper.database;
 
-  final result = await db.query(
+    final result = await db.query(
+      'days',
+      orderBy: 'day_id DESC',
+      limit: 1,
+    );
+
+    if (result.isEmpty) return null;
+    return result.first;
+  }
+
+  getById(String id) async{
+    final db = await DatabaseHelper.database;
+    final result = await db.query(
     'days',
-    orderBy: 'day_id DESC',
+    where: 'day_id = $id',
     limit: 1,
   );
-
-  if (result.isEmpty) return null;
   return result.first;
-}
+  }
 
-  Future<void> addConsumed(String id, List<List> consumed) async{
+  Future<void> addConsumed(String day_id, Map food, double weight) async{
     final db = await DatabaseHelper.database;
+    Map Day = await getById(day_id) as Map;
+    List consumed = Day['consumed'] == '' ? [] : jsonDecode(Day['consumed']);
+    consumed.add([food['type'], food['id'], weight]);
+    double calories_consumed_raw = Day['calories_consumed'] + food['calories'] * weight / 100;
+    double protein_consumed_raw = Day['protein_consumed'] + food['protein'] * weight / 100;
+    double carbs_consumed_raw = Day['carbs_consumed'] + food['carbs'] * weight / 100;
+    double fats_consumed_raw = Day['fats_consumed'] + food['fats'] * weight / 100;
+    double calories_consumed = double.parse(calories_consumed_raw.toStringAsFixed(2));
+    double protein_consumed = double.parse(protein_consumed_raw.toStringAsFixed(2));
+    double carbs_consumed = double.parse(carbs_consumed_raw.toStringAsFixed(2));
+    double fats_consumed = double.parse(fats_consumed_raw.toStringAsFixed(2));
     await db.update('days',
     {
       'consumed': jsonEncode(consumed),
+      'calories_consumed': calories_consumed,
+      'protein_consumed': protein_consumed,
+      'carbs_consumed': carbs_consumed,
+      'fats_consumed': fats_consumed,
     },
     where: 'day_id = ?',
-    whereArgs: [id],
+    whereArgs: [day_id],
     );
   }
 } 
 
-  class Profile{
+class Profile{
   insert(String name, double height, String birthDate)async{
     final db = await DatabaseHelper.database;
     await db.insert(
