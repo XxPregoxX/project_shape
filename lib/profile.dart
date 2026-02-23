@@ -48,7 +48,7 @@ class _profileState extends State<profile> {
                   return Text('Carregando perfil...');
                 }
               }),
-              TextButton(onPressed: (){}, child: Text('adicionar meta'))
+              TextButton(onPressed: (){add_goal(context);}, child: Text('adicionar meta'))
             ],
           )),
       ),

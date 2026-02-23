@@ -268,6 +268,7 @@ AddConsumed(BuildContext context, String day_id) {
   );
 }
 
+// isso tmb tem que ser un stateless widget
 edit_profile(BuildContext context){
   TextEditingController nameController = TextEditingController();
   TextEditingController birthController = TextEditingController();
@@ -308,6 +309,55 @@ edit_profile(BuildContext context){
                 String birth = birthController.text;
                 double height = double.parse(heightController.text);
                 Profile().update(name, height, birth).then((_) {
+                  Navigator.pop(context, true);
+                });
+              }, child: Text('Confirmar'))
+            ],
+          ),
+        )
+      ),
+    );
+  });
+}
+
+add_goal(BuildContext context){
+  TextEditingController caloriesController = TextEditingController();
+  TextEditingController proteinController = TextEditingController();
+  TextEditingController carbsController = TextEditingController();
+  TextEditingController fatsController = TextEditingController();
+  TextEditingController costController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  return showDialog(context: context, builder: (context) {
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      backgroundColor: Color(0xFF191919),
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Adicionar Meta'),
+              SizedBox(height: 20),
+              split_textfield('Peso(KG)', 'Custo (R\$)', weightController, costController),
+              SizedBox(height: 20),
+              split_textfield('Calorias', 'Proteínas (g)', caloriesController, proteinController),
+              SizedBox(height: 20),
+              split_textfield('Carboidratos (g)', 'Gorduras (g)', carbsController, fatsController),
+              SizedBox(height: 20),
+              TextButton(onPressed: (){
+                if (!(_formKey.currentState?.validate() ?? false)) {
+                  return;
+                }
+                double calories = double.parse(caloriesController.text);
+                double protein = double.parse(proteinController.text);
+                double carbs = double.parse(carbsController.text);
+                double fats = double.parse(fatsController.text);
+                double cost = double.parse(costController.text);
+                double weight = double.parse(weightController.text);
+                Profile().goalInsert(weight, calories, protein, carbs, fats, cost).then((_) {
                   Navigator.pop(context, true);
                 });
               }, child: Text('Confirmar'))

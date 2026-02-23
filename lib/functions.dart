@@ -371,12 +371,13 @@ class Profile{
     );
   }
 
-  goalInsert(double cost, double calories, double protein, double carbs, double fats) async {
+  goalInsert(double weight, double cost, double calories, double protein, double carbs, double fats) async {
     final db = await DatabaseHelper.database;
     final now = DateTime.now();
     await db.insert(
       'goals',
       {
+        'weight': weight,
         'cost': cost,
         'calories': calories,
         'protein': protein,

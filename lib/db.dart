@@ -61,6 +61,7 @@ class DatabaseHelper {
       )''');
         await db.execute('''CREATE TABLE IF NOT EXISTS goals(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      weight REAL,
       cost REAL,
       calories REAL,
       protein REAL,
