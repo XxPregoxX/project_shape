@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_shape/Ingredients.dart';
@@ -156,10 +158,12 @@ ingredient_card(Map<String, dynamic> ingredient){
     );
 }
 
-day_card(context, Map<String, dynamic> cardDay){
-  return GestureDetector(
+  day_card(context, Map<String, dynamic> cardDay){
+    Map cardDayFix = Map.from(cardDay);
+    cardDayFix['consumed'] = cardDayFix['consumed'] == '' ? [] : jsonDecode(cardDayFix['consumed'] as String);
+    return GestureDetector(
     onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDay)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDayFix)));
     },
     child: Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -186,10 +190,12 @@ day_card(context, Map<String, dynamic> cardDay){
 }
 
 getIngredientsAndRecipes() async {
-  List ingredients = await Ingredients().getAllNonDeleted();
-  List recipes = await Recipes().getAllNonDeleted();
+  List ingredientsRaw = await Ingredients().getAllNonDeleted();
+
+  List ingredients = ingredientsRaw.map((item) => {...item, 'type': 'ingredient'}).toList();
+  List recipesRaw = await Recipes().getAllNonDeleted();
+  List recipes = recipesRaw.map((item) => {...item, 'type': 'recipe'}).toList();
   return ingredients + recipes;
-  
 }
 
 AddConsumed(BuildContext context, String day_id) {
@@ -248,7 +254,7 @@ AddConsumed(BuildContext context, String day_id) {
         actions: [
           TextButton(
             onPressed: () {
-              if (_formKey.currentState!.validate()) {
+              if (_formKey.currentState?.validate() ?? false) {
                 Days().addConsumed(day_id, selected, double.parse(controller.text)).then((_) {
                   Navigator.pop(context, true);
                 });
@@ -262,14 +268,66 @@ AddConsumed(BuildContext context, String day_id) {
   );
 }
 
+edit_profile(BuildContext context){
+  TextEditingController nameController = TextEditingController();
+  TextEditingController birthController = TextEditingController();
+  TextEditingController heightController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  return showDialog(context: context, builder: (context) {
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      backgroundColor: Color(0xFF191919),
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Editar Perfil'),
+              SizedBox(height: 20),
+              general_textfield(label: 'Nome', controler: nameController),
+              SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                height: 50,
+                child: Row(
+                  children: [
+                    Expanded(child: general_textfield(label: 'Nascimento', controler: birthController, digitOnly: true)),
+                    SizedBox(width: 10),
+                    Expanded(child: general_textfield(label: 'Altura (cm)', controler: heightController, digitOnly: true)),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              TextButton(onPressed: (){
+                if (!(_formKey.currentState?.validate() ?? false)) {
+                  return;
+                }
+                String name = nameController.text;
+                String birth = birthController.text;
+                double height = double.parse(heightController.text);
+                Profile().update(name, height, birth).then((_) {
+                  Navigator.pop(context, true);
+                });
+              }, child: Text('Confirmar'))
+            ],
+          ),
+        )
+      ),
+    );
+  });
+}
+
 day_grid(Map day){
-  
-  Widget gridblock(double child){ 
+  Widget gridblock(dynamic child){ 
     return Container(
+      width: 70,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white),
       ),
       child: Text(child.toString(), 
+        textAlign: TextAlign.center,
         style: TextStyle(
             fontSize: 18,
           ),
@@ -280,22 +338,70 @@ day_grid(Map day){
   return Column(
     children: [
       Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          gridblock(day['calories_goal']),
-          gridblock(day['protein_goal']),
-          gridblock(day['carbs_goal']),
-          gridblock(day['fats_goal'])
+          gridblock(day['calories_goal'].round()),
+          gridblock(day['protein_goal'].round()),
+          gridblock(day['carbs_goal'].round()),
+          gridblock(day['fats_goal'].round()),
+          gridblock(day['cost_goal'])
         ],
       ),
       Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          gridblock(day['calories_consumed']),
-          gridblock(day['protein_consumed']),
-          gridblock(day['carbs_consumed']),
-          gridblock(day['fats_consumed'])
+          gridblock(day['calories_consumed'].round()),
+          gridblock(day['protein_consumed'].round()),
+          gridblock(day['carbs_consumed'].round()),
+          gridblock(day['fats_consumed'].round()),
+          gridblock(day['costs'])
         ],
       ),
     ],
+  );
+}
+
+consumed_card(List consumed) async {
+  Map item;
+  if (consumed[0] == 'recipe' ){
+    item = await Recipes().getByid(consumed[1]);
+  }
+  else {
+    item = await Ingredients().getByid(consumed[1]);
+  }
+  return Container(
+    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+    margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.white),
+    ),
+    child: Column(
+      children: [
+        Text('${item['name']} ${item['price']} R\$', style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),),
+        SizedBox(height: 15),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Kcal: ${item['calories'].round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Prot: ${(item['protein']).round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Carb: ${item['carbs'].round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Gord: ${item['fats'].round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+          ],
+        ),
+      ],
+    ),
   );
 }
 
@@ -470,11 +576,11 @@ class _AddRecipeForm extends State<AddRecipeForm> {
       for (final item in selecteds){
       double fator = int.parse(item.controller.text) / 1000;
       await Ingredients().getByid(item.id).then((ingredientData) {
-        price += ingredientData[0]['price'] * fator;
-        calories += ingredientData[0]['calories'] * fator;
-        protein += ingredientData[0]['protein'] * fator;
-        carbs += ingredientData[0]['carbs'] * fator;
-        fats += ingredientData[0]['fats'] * fator;});
+        price += ingredientData['price'] * fator;
+        calories += ingredientData['calories'] * fator;
+        protein += ingredientData['protein'] * fator;
+        carbs += ingredientData['carbs'] * fator;
+        fats += ingredientData['fats'] * fator;});
       ingredients[item.id] = double.parse(item.controller.text);
       };
       

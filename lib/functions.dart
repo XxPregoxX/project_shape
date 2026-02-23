@@ -79,10 +79,11 @@ class Ingredients{
 
   getByid(int id) async{
     final db = await DatabaseHelper.database;
-    return await db.query(
+    dynamic result = await db.query(
     'ingredients',
     where: 'id = $id',
-  );
+    );
+    return Map.from(result.first);
   }
 
 }
@@ -152,7 +153,16 @@ class Recipes{
     );
   }
 
-    Future<List<Map<String, dynamic>>> fetchRecipes({
+  getByid(int id) async{
+    final db = await DatabaseHelper.database;
+    dynamic result = await db.query(
+    'recipes',
+    where: 'id = $id',
+    );
+    return Map.from(result.first);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchRecipes({
   required int limit,
   required int offset,
   }) async {
@@ -192,6 +202,7 @@ class Days{
         'protein_goal': proteinGoal,
         'carbs_goal': carbsGoal,
         'fats_goal': fatsGoal,
+        'costs': 0,
         'calories_consumed': 0,
         'protein_consumed': 0,
         'carbs_consumed': 0,
@@ -277,36 +288,43 @@ add_days() async {
     return result.first;
   }
 
-  getById(String id) async{
+  Future<Map> getById(String id) async{
     final db = await DatabaseHelper.database;
     final result = await db.query(
     'days',
     where: 'day_id = $id',
     limit: 1,
   );
-  return result.first;
+  Map resultMap = Map.from(result.first);
+  resultMap['consumed'] = resultMap['consumed'] == '' ? [] : jsonDecode(resultMap['consumed'] as String);
+  return resultMap;
   }
 
   Future<void> addConsumed(String day_id, Map food, double weight) async{
     final db = await DatabaseHelper.database;
-    Map Day = await getById(day_id) as Map;
-    List consumed = Day['consumed'] == '' ? [] : jsonDecode(Day['consumed']);
+    Map Day = await getById(day_id);
+    List consumed = Day['consumed'] == '' ? [] : Day['consumed'];
     consumed.add([food['type'], food['id'], weight]);
     double calories_consumed_raw = Day['calories_consumed'] + food['calories'] * weight / 100;
     double protein_consumed_raw = Day['protein_consumed'] + food['protein'] * weight / 100;
     double carbs_consumed_raw = Day['carbs_consumed'] + food['carbs'] * weight / 100;
     double fats_consumed_raw = Day['fats_consumed'] + food['fats'] * weight / 100;
+    double cost_raw = Day['costs'] + food['price'] * weight / 100;
     double calories_consumed = double.parse(calories_consumed_raw.toStringAsFixed(2));
     double protein_consumed = double.parse(protein_consumed_raw.toStringAsFixed(2));
     double carbs_consumed = double.parse(carbs_consumed_raw.toStringAsFixed(2));
     double fats_consumed = double.parse(fats_consumed_raw.toStringAsFixed(2));
+    double cost = double.parse(cost_raw.toStringAsFixed(2));
+    print(Day['consumed']);
+    print(consumed);
     await db.update('days',
     {
-      'consumed': jsonEncode(consumed),
+      'costs': cost,
       'calories_consumed': calories_consumed,
       'protein_consumed': protein_consumed,
       'carbs_consumed': carbs_consumed,
       'fats_consumed': fats_consumed,
+      'consumed': jsonEncode(consumed),
     },
     where: 'day_id = ?',
     whereArgs: [day_id],
@@ -328,8 +346,19 @@ class Profile{
     );
   }
 
+  getProfile() async{
+    final db = await DatabaseHelper.database;
+    dynamic result = await db.query('profile', where: 'id = 1', limit: 1);
+    if (result.isEmpty) return null;
+    return Map.from(result.first);
+  }
+
   Future<void> update(String name, double height, String birthDate) async{
     final db = await DatabaseHelper.database;
+    if ((await db.query('profile')).isEmpty){
+      await insert(name, height, birthDate);
+      return;
+    }
     await db.update(
       'profile',
       {

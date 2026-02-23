@@ -45,6 +45,7 @@ class DatabaseHelper {
       protein_goal REAL,
       carbs_goal REAL,
       fats_goal REAL,
+      costs REAL,
       calories_consumed REAL,
       protein_consumed REAL,
       carbs_consumed REAL,

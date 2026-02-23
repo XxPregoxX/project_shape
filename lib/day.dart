@@ -16,7 +16,15 @@ class _dayState extends State<day> {
   @override
   void initState() {
     super.initState();
-    Day = this.widget.Day;
+    Day = (this.widget.Day);
+  }
+
+  Future<List<Widget>> buildCards() async{
+    List<Widget> cards = [];
+    for (var i in Day['consumed']){
+      await consumed_card(i).then((value) => cards.add(value));
+    }
+    return cards;
   }
 
   add_consumed() async {
@@ -34,16 +42,27 @@ class _dayState extends State<day> {
       appBar: AppBar(),
       body: Center(
         child: Container(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(
             children: [
               day_grid(Day),
+              SizedBox(height: 20),
+              FutureBuilder(future: buildCards(), builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Erro ao carregar card: ${snapshot.error}');
+                } else {
+                  return Column(
+                    children: snapshot.data!,
+                  );
+                }
+              }),             
               ElevatedButton(onPressed: () {
                 add_consumed();
               }, child: Text('Adicionar refeição')),
             ],
           ),
-
         ),
       ),
     );
