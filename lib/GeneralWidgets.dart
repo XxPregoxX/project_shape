@@ -369,6 +369,57 @@ add_goal(BuildContext context){
   });
 }
 
+Widget goal_card(Map goal){
+  double calories = goal['calories'];
+  double protein = goal['protein'];
+  double carbs = goal['carbs'];
+  double fats = goal['fats'];
+  double cost = goal['cost'];
+  double weight = goal['weight'];
+  return Container(
+    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+    margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.white),
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('${weight.round()} KG', style: TextStyle(
+              fontSize: 15
+            ),),
+            SizedBox(width: 20),
+            Text('Gasto: ${cost.round()} R\$', style: TextStyle(
+              fontSize: 15
+            ),),
+          ],
+        ),
+        SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Kcal: ${calories.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Prot: ${protein.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Carb: ${carbs.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Gord: ${fats.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 day_grid(Map day){
   Widget gridblock(dynamic child){ 
     return Container(

@@ -44,8 +44,22 @@ class _profileState extends State<profile> {
                   );
                 } else if (snapshot.hasError) {
                   return Text('Erro ao carregar perfil');
+                } else if(snapshot.data == null) {
+                  return TextButton(onPressed: () => edit_profile(context), child: Text('Adicionar perfil'));
                 } else {
                   return Text('Carregando perfil...');
+                }
+              }),
+              FutureBuilder(future: Profile().getAllGoals(), builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final goals = snapshot.data as List<Map>;
+                  return Column(
+                    children: goals.map((goal) => goal_card(goal)).toList(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Erro ao carregar metas');
+                } else {
+                  return Text('Carregando metas...');
                 }
               }),
               TextButton(onPressed: (){add_goal(context);}, child: Text('adicionar meta'))
