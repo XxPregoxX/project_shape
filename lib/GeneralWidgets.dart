@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project_shape/AddIngredient.dart';
 import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/day.dart';
 import 'package:project_shape/functions.dart';
@@ -115,7 +116,7 @@ recipe_card(BuildContext context, Map<String, dynamic> Recipe){
   ); 
 }
 
-ingredient_card(Map<String, dynamic> ingredient){
+ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCallback? onUpdate]) {
   String name = ingredient['name'];
   double calories = ingredient['calories']; 
   double protein = ingredient['protein'];
@@ -131,10 +132,21 @@ ingredient_card(Map<String, dynamic> ingredient){
       ),
       child: Column(
         children: [
-          Text('$name $price R\$', style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),),
+          Row(
+            children: [
+              Text('$name $price R\$', style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),),
+              IconButton(onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => add_ingredient(ingredientData: ingredient))).then((value) {
+                  if (onUpdate != null) {
+                    onUpdate();
+                  }
+                });
+              }, icon: Icon(Icons.mode_edit, color: Colors.white))
+            ],
+          ),
           SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -269,10 +281,10 @@ AddConsumed(BuildContext context, String day_id) {
 }
 
 // isso tmb tem que ser un stateless widget
-edit_profile(BuildContext context){
-  TextEditingController nameController = TextEditingController();
-  TextEditingController birthController = TextEditingController();
-  TextEditingController heightController = TextEditingController();
+edit_profile(BuildContext context, [List? profileData]) {
+  TextEditingController nameController = TextEditingController(text: profileData != null ? profileData[0] : '');
+  TextEditingController birthController = TextEditingController(text: profileData != null ? profileData[1] : '');
+  TextEditingController heightController = TextEditingController(text: profileData != null ? profileData[2] : '');
   final _formKey = GlobalKey<FormState>();
   return showDialog(context: context, builder: (context) {
     return Dialog(
@@ -506,7 +518,7 @@ consumed_card(List consumed) async {
   );
 }
 
-general_textfield({ required String label, required TextEditingController controler, bool digitOnly = false }){
+general_textfield({ required String label, required TextEditingController controler, bool digitOnly = false}){
   return TextFormField(
     controller: controler,
     validator: (value) {
@@ -592,15 +604,15 @@ confirmar_button(String text, VoidCallback onPressed){
   );
 }
 
-// isso tem que ser um stateful widget
-add_ingredient_form(BuildContext context){
+// isso tem que ser um stateless widget
+add_ingredient_form(BuildContext context, [Map<String, dynamic>? ingredientData]) {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController kcalController = TextEditingController();
-  final TextEditingController carbController = TextEditingController();
-  final TextEditingController protController = TextEditingController();
-  final TextEditingController fatController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
+  final TextEditingController nameController = TextEditingController(text: ingredientData != null ? ingredientData['name'] : '');
+  final TextEditingController kcalController = TextEditingController(text: ingredientData != null ? ingredientData['calories'].round().toString() : '');
+  final TextEditingController carbController = TextEditingController(text: ingredientData != null ? ingredientData['carbs'].round().toString() : '');
+  final TextEditingController protController = TextEditingController(text: ingredientData != null ? ingredientData['protein'].round().toString() : '');
+  final TextEditingController fatController = TextEditingController(text: ingredientData != null ? ingredientData['fats'].round().toString() : '');
+  final TextEditingController priceController = TextEditingController(text: ingredientData != null ? ingredientData['price'].toString() : '');
   // Todos os controllers acime não estão sendo descartados, o que pode causar memory leaks em uso prolongado.
   return Form(
     key: _formKey,
@@ -623,6 +635,12 @@ add_ingredient_form(BuildContext context){
       double fat = double.parse(fatController.text);
       double price = double.parse(priceController.text);
       String name = nameController.text;
+      if (ingredientData != null) {
+        Ingredients().update(ingredientData['id'], name, price, kcal, prot, carb, fat).then((_) {
+          Navigator.pop(context, true);
+        });
+        return;
+      }
       Ingredients().insert(name, price, kcal, prot, carb, fat);
       Navigator.pop(context, true);
     } else {
@@ -635,7 +653,8 @@ add_ingredient_form(BuildContext context){
 }
 
 class AddRecipeForm extends StatefulWidget {
-  const AddRecipeForm({super.key});
+  final Map? recipeData;
+  const AddRecipeForm({super.key, this.recipeData});
 
   @override
   State<AddRecipeForm> createState() => _AddRecipeForm();
@@ -644,13 +663,35 @@ class AddRecipeForm extends StatefulWidget {
 class _AddRecipeForm extends State<AddRecipeForm> {
   late Future<dynamic> _future;
   List selecteds = [];
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController obsController = TextEditingController();
+  late TextEditingController nameController;
+  late TextEditingController obsController;
+  late int id;
+  bool edit = false;
 
   @override
   void initState() {
     super.initState();
     _future = Ingredients().getAllNonDeleted();
+
+    nameController = TextEditingController(
+    text: widget.recipeData != null
+        ? widget.recipeData!['name']
+        : '',
+    );
+    obsController = TextEditingController(
+      text: widget.recipeData != null
+          ? widget.recipeData!['description']
+          : '',
+    );
+    if (widget.recipeData != null) {
+      edit = true;
+      id = widget.recipeData!['id'];
+      Map ingredients = jsonDecode(widget.recipeData!['ingredients']);
+      ingredients.forEach((key, value) async{
+        Map ingredient = await Ingredients().getByid(int.parse(key));
+        select_ingredient(SelectedIngredient(id: int.parse(key), name: ingredient['name'], controller: TextEditingController(text: value.round().toString())));
+      });
+    }
   }
 
   void reload() {
@@ -690,8 +731,13 @@ class _AddRecipeForm extends State<AddRecipeForm> {
       protein = double.parse(protein.toStringAsFixed(2)); 
       carbs = double.parse(carbs.toStringAsFixed(2));
       fats = double.parse(fats.toStringAsFixed(2));
-    await Recipes().insert(name, ingredients, Observation, price, calories, protein, carbs, fats);
-    Navigator.pop(context, true);
+      if (edit){
+        await Recipes().update(id, name, ingredients, Observation, price, calories, protein, carbs, fats);
+        Navigator.pop(context, true);
+        return;
+      }
+      await Recipes().insert(name, ingredients, Observation, price, calories, protein, carbs, fats);
+      Navigator.pop(context, true);
   }
 
   @override
@@ -844,7 +890,8 @@ class SelectedIngredient {
   SelectedIngredient({
     required this.id,
     required this.name,
-  }) : controller = TextEditingController();
+    TextEditingController? controller,
+  }) : controller = controller ?? TextEditingController();
 }
 
 

@@ -9,9 +9,9 @@ import 'package:project_shape/functions.dart';
 import 'package:project_shape/recipe.dart';
 import 'package:project_shape/profile.dart';
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  Days().add_days();
+  await Days().add_days();
   runApp(const MyApp());
 }
 

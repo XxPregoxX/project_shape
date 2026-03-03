@@ -10,6 +10,21 @@ class profile extends StatefulWidget {
 }
 
 class _profileState extends State<profile> {
+  
+  editProfile(BuildContext context, [List? profileData]) async {
+    final result = await edit_profile(context, profileData);
+    if (result == true) {
+      setState(() {});
+    }
+  }
+
+  addGoal(BuildContext context) async {
+    final result = await add_goal(context);
+    if (result == true) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -30,7 +45,7 @@ class _profileState extends State<profile> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text('Nome: ${profile['name']}'),
-                          IconButton(onPressed: () => edit_profile(context), icon: Icon(Icons.mode_edit, color: Colors.white))
+                          IconButton(onPressed: () => editProfile(context, [profile['name'], profile['birth_date'], profile['height'].toString()]), icon: Icon(Icons.mode_edit, color: Colors.white))
                         ],
                       ),
                       Row(
@@ -45,7 +60,7 @@ class _profileState extends State<profile> {
                 } else if (snapshot.hasError) {
                   return Text('Erro ao carregar perfil');
                 } else if(snapshot.data == null) {
-                  return TextButton(onPressed: () => edit_profile(context), child: Text('Adicionar perfil'));
+                  return TextButton(onPressed: () => editProfile(context), child: Text('Adicionar perfil'));
                 } else {
                   return Text('Carregando perfil...');
                 }
@@ -62,7 +77,7 @@ class _profileState extends State<profile> {
                   return Text('Carregando metas...');
                 }
               }),
-              TextButton(onPressed: (){add_goal(context);}, child: Text('adicionar meta'))
+              TextButton(onPressed: (){addGoal(context);}, child: Text('adicionar meta'))
             ],
           )),
       ),

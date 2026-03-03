@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
 
 class add_ingredient extends StatefulWidget {
-  const add_ingredient({super.key});
+  const add_ingredient({super.key, this.ingredientData});
+  final Map<String, dynamic>? ingredientData;
 
   @override
   State<add_ingredient> createState() => _add_ingredientState();
@@ -21,7 +22,7 @@ class _add_ingredientState extends State<add_ingredient> {
           child: Column(
             children: [
               Icon(Icons.eco, size: 200),
-              add_ingredient_form(context)
+              add_ingredient_form(context, widget.ingredientData)
             ],
           ),
         ),

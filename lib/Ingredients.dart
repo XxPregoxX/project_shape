@@ -87,7 +87,14 @@ class _ingredientsState extends State<ingredients> {
                 itemBuilder: (context, index) {
                   if (index < ingredients.length) {
                     final item = ingredients[index];
-                    return ingredient_card(item);
+                    return ingredient_card(context, item, () {
+                      setState(() {
+                        ingredients.clear();
+                        offset = 0;
+                        hasMore = true;
+                      });
+                      loadMore();
+                    });
                   } else {
                     return Padding(
                       padding: EdgeInsets.all(16),

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
 
 class add_recipe extends StatefulWidget {
-  const add_recipe({super.key});
+  final Map? recipeData;
+  const add_recipe({super.key, this.recipeData});
 
   @override
   State<add_recipe> createState() => _add_recipeState();
@@ -22,7 +23,7 @@ class _add_recipeState extends State<add_recipe> {
           child: Column(
             children: [
               Icon(Icons.restaurant, size: 200),
-              AddRecipeForm(),
+              AddRecipeForm(recipeData: widget.recipeData),
             ],
           ),
         ),

@@ -112,13 +112,17 @@ class Recipes{
     );
   }
 
-  Future<void> update(int id, String name, String ingredients, String description, double price, double calories, double protein, double carbs, double fats) async{
+  Future<void> update(int id, String name, Map ingredients, String description, double price, double calories, double protein, double carbs, double fats) async{
     final db = await DatabaseHelper.database;
+    final mapStringKey = ingredients.map(
+    (key, value) => MapEntry(key.toString(), value),
+    );
+    final jsoned = jsonEncode(mapStringKey);
     await db.update(
       'recipes',
       {
         'name': name,
-        'ingredients': ingredients,
+        'ingredients': jsoned,
         'price': price, 
         'calories': calories, 
         'protein': protein, 

@@ -10,6 +10,16 @@ class days extends StatefulWidget {
 }
 
 class _daysState extends State<days> {
+
+  getDays() async {
+    List<Map<String, dynamic>> goals = await Profile().getAllGoals();
+    if (goals.isEmpty) {
+      return [];
+    }
+    List<Map<String, dynamic>> days = await Days().getAll();
+    return days;
+  }
+    
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -17,9 +27,10 @@ class _daysState extends State<days> {
       body: Center(
         child: SizedBox(
           width: screenWidth * 0.8,
-          child: FutureBuilder(future: Days().getAll(), builder: (context, snapshot){
-            if(snapshot.hasData){
-              
+          child: FutureBuilder(future: getDays(), builder: (context, snapshot){
+            if (snapshot.data != null && (snapshot.data as List).isEmpty) {
+              return Center(child: Text('Nenhuma meta encontrada. Adicione uma meta e reinicie o aplicativo para começar a registrar seus dias!'));
+            } else if(snapshot.hasData){
               List<Map<String, dynamic>> days = snapshot.data as List<Map<String, dynamic>>;
               return ListView.builder(
                 itemCount: days.length,

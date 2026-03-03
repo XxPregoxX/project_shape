@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
+import 'package:project_shape/addRecipe.dart';
 
 class recipe extends StatefulWidget {
   final Map Recipe;
@@ -23,7 +24,18 @@ class _recipeState extends State<recipe> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              titleText(widget.Recipe['name']),
+              Row(
+                children: [
+                  titleText(widget.Recipe['name']),
+                  IconButton(onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: widget.Recipe))).then((value) {
+                      if (value == true) {
+                        setState(() {});
+                      }
+                    });
+                  }, icon: Icon(Icons.mode_edit, color: Colors.white))
+                ],
+              ),
               SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
