@@ -11,7 +11,7 @@ class recipes extends StatefulWidget {
 }
 
 class _recipesState extends State<recipes> {
-  TextEditingController searchControler = TextEditingController();
+  late TextEditingController searchControler;
 
   Future<void> goToAddRecipe() async {
     final result = await Navigator.pushNamed(context, '/add_recipe');
@@ -21,6 +21,15 @@ class _recipesState extends State<recipes> {
     }
   void refresh(){
     setState(() {});
+    }
+    
+  @override
+  void initState() {
+    super.initState();
+    searchControler = TextEditingController();
+    searchControler.addListener((){
+      refresh();
+    });
   }
 
   @override
@@ -33,7 +42,7 @@ class _recipesState extends State<recipes> {
           child: Column(children: [
             search_bar('Pesquisar', searchControler),
             Expanded(
-                child: FutureBuilder(future: Recipes().getAllNonDeleted(), builder: (context, snapshot){
+                child: FutureBuilder(future: Recipes().getRecipes(search: searchControler.text), builder: (context, snapshot){
                   if(snapshot.connectionState == ConnectionState.waiting){
                     return Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError){

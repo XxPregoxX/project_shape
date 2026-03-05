@@ -172,17 +172,23 @@ class Recipes{
     return Map.from(result.first);
   }
 
-  Future<List<Map<String, dynamic>>> fetchRecipes({
-  required int limit,
-  required int offset,
+  Future<List<Map<String, dynamic>>> getRecipes({
+  String? search
   }) async {
   final db = await DatabaseHelper.database;
+  String where = 'deleted = 0';
+  List whereArgs = [];
+
+  if (search != null && search.trim().isNotEmpty) {
+    where += ' AND name LIKE ?';
+    whereArgs.add('%$search%');
+  }
 
   return await db.query(
     'recipes',
     orderBy: 'id',
-    limit: limit,
-    offset: offset,
+    where: where,
+    whereArgs: whereArgs
   );
   }
 
