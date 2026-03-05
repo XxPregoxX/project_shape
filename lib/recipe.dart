@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
+import 'package:project_shape/Recipes.dart';
 import 'package:project_shape/addRecipe.dart';
+import 'package:project_shape/functions.dart';
 
 class recipe extends StatefulWidget {
   final Map Recipe;
@@ -11,12 +13,31 @@ class recipe extends StatefulWidget {
 }
 
 class _recipeState extends State<recipe> {
+  late Map Recipe;
+  late bool edited;
+  @override
+  void initState() {
+    super.initState();
+    edited = false;
+    Recipe = widget.Recipe;
+  }
+
+  update_recipe() async{
+      Recipe = await Recipes().getByid(Recipe['id']);
+      edited = true;
+      setState(() {});
+    }
   
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, edited);
+            },)
       ),
       body: Center(
         child: Container(
@@ -26,12 +47,10 @@ class _recipeState extends State<recipe> {
             children: [
               Row(
                 children: [
-                  titleText(widget.Recipe['name']),
+                  titleText(Recipe['name']),
                   IconButton(onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: widget.Recipe))).then((value) {
-                      if (value == true) {
-                        setState(() {});
-                      }
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: Recipe))).then((value) async{
+                        update_recipe();
                     });
                   }, icon: Icon(Icons.mode_edit, color: Colors.white))
                 ],
@@ -40,20 +59,20 @@ class _recipeState extends State<recipe> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  infoText('kcal:', widget.Recipe['calories'].round().toString()),
-                  infoText('Prot:', widget.Recipe['protein'].round().toString()),
+                  infoText('kcal:', Recipe['calories'].round().toString()),
+                  infoText('Prot:', Recipe['protein'].round().toString()),
                 ],
               ),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  infoText('Carb:', widget.Recipe['carbs'].round().toString()),
-                  infoText('Fats:', widget.Recipe['fats'].round().toString()),
+                  infoText('Carb:', Recipe['carbs'].round().toString()),
+                  infoText('Fats:', Recipe['fats'].round().toString()),
                 ],
               ),
               SizedBox(height: 10),
-              Text('${widget.Recipe['price'].toStringAsFixed(2)} R\$',
+              Text('${Recipe['price'].toStringAsFixed(2)} R\$',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -66,7 +85,7 @@ class _recipeState extends State<recipe> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.white),
                 ),
-                child: Text(widget.Recipe['description'],
+                child: Text(Recipe['description'],
                 style: const TextStyle(
                   fontSize: 17,
                 ),),

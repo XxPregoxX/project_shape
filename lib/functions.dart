@@ -58,18 +58,24 @@ class Ingredients{
     );
   }
 
-  Future<List<Map<String, dynamic>>> fetchIngredients({
-  required int limit,
-  required int offset,
+  Future<List<Map<String, dynamic>>> getIngredients({
+  String? search
   }) async {
   final db = await DatabaseHelper.database;
+  String where = 'deleted = 0';
+  List whereArgs = [];
+  if (search != null && search.trim().isNotEmpty) {
+    where += ' AND name LIKE ?';
+    whereArgs.add('%$search%');
+  }
 
-  return await db.query(
+  dynamic teste = await db.query(
     'ingredients',
     orderBy: 'id',
-    limit: limit,
-    offset: offset,
+    where: where,
+    whereArgs: whereArgs
   );
+  return teste;
   }
 
   getAllNonDeleted() async{

@@ -47,10 +47,11 @@ Widget infoText(String label, String value) {
   );
 }
 
-search_bar(String hint){
+search_bar(String hint, TextEditingController? controller){
            return Container(
             margin: const EdgeInsets.fromLTRB(0, 40, 0, 8),
              child: TextField(
+              controller: controller,
               decoration: InputDecoration(hintText: hint,
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.white),
@@ -66,7 +67,7 @@ search_bar(String hint){
            );
 }
 
-recipe_card(BuildContext context, Map<String, dynamic> Recipe){
+recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback callback){
   String name = Recipe['name'];
   double calories = Recipe['calories']; 
   double protein = Recipe['protein'];
@@ -75,7 +76,13 @@ recipe_card(BuildContext context, Map<String, dynamic> Recipe){
   double price = Recipe['price'];
   return GestureDetector(
     onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => recipe(Recipe: Recipe)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => recipe(Recipe: Recipe))).then((result){
+        if (result == true){
+          print('teste');
+          callback(); 
+        }
+      }
+      );
     },
     child: Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 3),

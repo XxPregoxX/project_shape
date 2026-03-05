@@ -15,59 +15,32 @@ class _ingredientsState extends State<ingredients> {
     int offset = 0;
     bool isLoading = false;
     bool hasMore = true;
+    late TextEditingController searchController;
     final ScrollController _controller = ScrollController();
-    Future<void> loadMore() async {
-        if (isLoading || !hasMore) return;
 
-        setState(() {isLoading = true;});
-
-        final newItems = await Ingredients().fetchIngredients(
-          limit: limit,
-          offset: offset,
-        );
-
-        if (newItems.isEmpty) {
-          hasMore = false;
-        } else {
-          ingredients.addAll(newItems);
-          offset += limit;
-        }
-
-
-        setState(() {isLoading = false;});
+    Future<void> Update() async {
+      ingredients = await Ingredients().getIngredients(
+        search: searchController.text
+      );
+      setState(() {});
     }
+
 
     @override
     void initState() {
       super.initState();
-      _controller.addListener(() {
-        if (_controller.position.pixels >=
-            _controller.position.maxScrollExtent - 100) {
-          loadMore();
-        }
+      searchController = TextEditingController();
+      Update();
+      searchController.addListener((){
+        Update();
       });
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    _ensureScrollable();
-    });
     }
 
-    Future<void> _ensureScrollable() async {
-  if (!_controller.hasClients) return;
-
-  while (_controller.position.maxScrollExtent == 0 && hasMore && !isLoading) {
-    await loadMore();
-    await Future.delayed(const Duration(milliseconds: 16)); // deixa o frame respirar
-  }
-  } 
 
     Future<void> goToAddIngredient() async {
     final result = await Navigator.pushNamed(context, '/add_ingredient');
     if (result == true) {
-      ingredients.clear();
-      offset = 0;
-      hasMore = true;
-      await loadMore();
+      Update();
     }
     }
 
@@ -79,28 +52,16 @@ class _ingredientsState extends State<ingredients> {
           child: SizedBox(
           width: screenWidth * 0.8,
           child: Column(children: [
-            search_bar('Pesquisar'),
+            search_bar('Pesquisar Ingrediente', searchController),
             Expanded(
               child: ListView.builder(
-                controller: _controller,
-                itemCount: ingredients.length + (isLoading ? 1 : 0),
+                itemCount: ingredients.length,
                 itemBuilder: (context, index) {
-                  if (index < ingredients.length) {
                     final item = ingredients[index];
                     return ingredient_card(context, item, () {
-                      setState(() {
-                        ingredients.clear();
-                        offset = 0;
-                        hasMore = true;
-                      });
-                      loadMore();
+                      setState(() {});
                     });
-                  } else {
-                    return Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
+
                 },
               ),
             ),
