@@ -22,7 +22,7 @@ class _recipesState extends State<recipes> {
   void refresh(){
     setState(() {});
     }
-    
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +40,7 @@ class _recipesState extends State<recipes> {
         child: SizedBox(
           width: screenWidth * 0.8,
           child: Column(children: [
-            search_bar('Pesquisar', searchControler),
+            search_bar('Pesquisar Receita', searchControler),
             Expanded(
                 child: FutureBuilder(future: Recipes().getRecipes(search: searchControler.text), builder: (context, snapshot){
                   if(snapshot.connectionState == ConnectionState.waiting){

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_shape/AddIngredient.dart';
@@ -199,7 +198,7 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
             fontSize: 20,
             fontWeight: FontWeight.w900,
           ),),
-          Text('Calorias: 923', style: TextStyle(
+          Text('Calorias: ${cardDay['calories_consumed'].round()}', style: TextStyle(
             fontSize: 18,
           ),)
         ],
@@ -483,8 +482,13 @@ day_grid(Map day){
 
 consumed_card(List consumed) async {
   Map item;
+  double factor = 1000 / consumed[2];
   if (consumed[0] == 'recipe' ){
     item = await Recipes().getByid(consumed[1]);
+    factor = consumed[2] / item['weight'];
+    print(item);
+    print(consumed);
+    print(factor);
   }
   else {
     item = await Ingredients().getByid(consumed[1]);
@@ -498,7 +502,7 @@ consumed_card(List consumed) async {
     ),
     child: Column(
       children: [
-        Text('${item['name']} ${item['price']} R\$', style: TextStyle(
+        Text('${item['name']} ${(item['price'] * factor)} R\$', style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),),
@@ -506,16 +510,16 @@ consumed_card(List consumed) async {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Kcal: ${item['calories'].round()}', style: TextStyle(
+            Text('Kcal: ${(item['calories'] * factor).round()}', style: TextStyle(
               fontSize: 15
             ),),
-            Text('Prot: ${(item['protein']).round()}', style: TextStyle(
+            Text('Prot: ${(item['protein'] * factor).round()}', style: TextStyle(
               fontSize: 15
             ),),
-            Text('Carb: ${item['carbs'].round()}', style: TextStyle(
+            Text('Carb: ${(item['carbs'] * factor).round()}', style: TextStyle(
               fontSize: 15
             ),),
-            Text('Gord: ${item['fats'].round()}', style: TextStyle(
+            Text('Gord: ${(item['fats'] * factor).round()}', style: TextStyle(
               fontSize: 15
             ),),
           ],

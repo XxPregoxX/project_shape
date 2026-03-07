@@ -108,6 +108,7 @@ class Recipes{
       {
         'name': name,
         'ingredients': jsoned,
+        'weight': mapStringKey.values.reduce((a, b) => a + b),
         'price': price, 
         'calories': calories, 
         'protein': protein, 
@@ -129,6 +130,7 @@ class Recipes{
       {
         'name': name,
         'ingredients': jsoned,
+        'weight': mapStringKey.values.reduce((a, b) => a + b),
         'price': price, 
         'calories': calories, 
         'protein': protein, 
@@ -315,18 +317,22 @@ add_days() async {
     Map Day = await getById(day_id);
     List consumed = Day['consumed'] == '' ? [] : Day['consumed'];
     consumed.add([food['type'], food['id'], weight]);
-    double calories_consumed_raw = Day['calories_consumed'] + food['calories'] * weight / 100;
-    double protein_consumed_raw = Day['protein_consumed'] + food['protein'] * weight / 100;
-    double carbs_consumed_raw = Day['carbs_consumed'] + food['carbs'] * weight / 100;
-    double fats_consumed_raw = Day['fats_consumed'] + food['fats'] * weight / 100;
-    double cost_raw = Day['costs'] + food['price'] * weight / 100;
+
+    double baseWeight = food['type'] == 'ingredient'
+    ? 1000
+    : food['weight'];
+    double factor = weight / baseWeight;
+
+    double calories_consumed_raw = Day['calories_consumed'] + food['calories'] * factor;
+    double protein_consumed_raw = Day['protein_consumed'] + food['protein'] * factor;
+    double carbs_consumed_raw = Day['carbs_consumed'] + food['carbs'] * factor;
+    double fats_consumed_raw = Day['fats_consumed'] + food['fats'] * factor;
+    double cost_raw = Day['costs'] + food['price'] * factor;
     double calories_consumed = double.parse(calories_consumed_raw.toStringAsFixed(2));
     double protein_consumed = double.parse(protein_consumed_raw.toStringAsFixed(2));
     double carbs_consumed = double.parse(carbs_consumed_raw.toStringAsFixed(2));
     double fats_consumed = double.parse(fats_consumed_raw.toStringAsFixed(2));
     double cost = double.parse(cost_raw.toStringAsFixed(2));
-    print(Day['consumed']);
-    print(consumed);
     await db.update('days',
     {
       'costs': cost,

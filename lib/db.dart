@@ -30,6 +30,7 @@ class DatabaseHelper {
       id INTEGER PRIMARY KEY AUTOINCREMENT, 
       name TEXT, 
       ingredients TEXT, 
+      weight REAL,
       price REAL, 
       calories REAL, 
       protein REAL, 
