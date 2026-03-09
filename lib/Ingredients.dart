@@ -59,7 +59,7 @@ class _ingredientsState extends State<ingredients> {
                 itemBuilder: (context, index) {
                     final item = ingredients[index];
                     return ingredient_card(context, item, () {
-                      setState(() {});
+                      Update();
                     });
 
                 },

@@ -77,7 +77,6 @@ recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback call
     onTap: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) => recipe(Recipe: Recipe))).then((result){
         if (result == true){
-          print('teste');
           callback(); 
         }
       }
@@ -122,6 +121,28 @@ recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback call
   ); 
 }
 
+delete_confirmation(BuildContext context, VoidCallback action){
+ return  showDialog(
+   context: context,
+   builder: (_) {
+     return Dialog(
+      child: Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [Text("Você tem certeza que deseja remover este item?"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+            TextButton(onPressed: (){Navigator.pop(context);}, child: Text('Não')),
+            TextButton(onPressed: (){action(); Navigator.pop(context);}, child: Text('Sim'))
+          ],)],
+        ),
+      ),
+     );
+   }
+ );
+}
+
 ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCallback? onUpdate]) {
   String name = ingredient['name'];
   double calories = ingredient['calories']; 
@@ -129,6 +150,12 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
   double carbs = ingredient['carbs'];
   double fats = ingredient['fats'];
   double price = ingredient['price'];
+
+  delete_ingredient(){
+    Ingredients().delete(ingredient['id']);
+    onUpdate!();
+  }
+
   return  Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
@@ -144,13 +171,24 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),),
-              IconButton(onPressed: (){
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                visualDensity: VisualDensity.compact,
+                onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (context) => add_ingredient(ingredientData: ingredient))).then((value) {
                   if (onUpdate != null) {
                     onUpdate();
                   }
                 });
-              }, icon: Icon(Icons.mode_edit, color: Colors.white))
+              }, icon: Icon(Icons.mode_edit, color: Colors.white)),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                visualDensity: VisualDensity.compact,
+                onPressed: (){
+                delete_confirmation(context, delete_ingredient);
+              }, icon: Icon(Icons.delete, color: Colors.white,))
             ],
           ),
           SizedBox(height: 15),
@@ -176,12 +214,16 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
     );
 }
 
-  day_card(context, Map<String, dynamic> cardDay){
+  day_card(context, Map<String, dynamic> cardDay, VoidCallback action){
     Map cardDayFix = Map.from(cardDay);
     cardDayFix['consumed'] = cardDayFix['consumed'] == '' ? [] : jsonDecode(cardDayFix['consumed'] as String);
     return GestureDetector(
     onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDayFix)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDayFix))).then((result){
+        if (result == true){
+          action();
+        }
+      });
     },
     child: Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -480,19 +522,21 @@ day_grid(Map day){
   );
 }
 
-consumed_card(List consumed) async {
+consumed_card(BuildContext context, List consumed, int index) async {
   Map item;
   double factor = 1000 / consumed[2];
   if (consumed[0] == 'recipe' ){
     item = await Recipes().getByid(consumed[1]);
     factor = consumed[2] / item['weight'];
-    print(item);
-    print(consumed);
-    print(factor);
   }
   else {
     item = await Ingredients().getByid(consumed[1]);
   }
+
+  void delete_consumed(){
+    
+  }
+
   return Container(
     padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
     margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
@@ -502,10 +546,21 @@ consumed_card(List consumed) async {
     ),
     child: Column(
       children: [
-        Text('${item['name']} ${(item['price'] * factor)} R\$', style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),),
+        Row(
+          children: [
+            Text('${item['name']} ${(item['price'] * factor)} R\$', style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),),
+                        IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                visualDensity: VisualDensity.compact,
+                onPressed: (){
+                delete_confirmation(context, delete_consumed);
+              }, icon: Icon(Icons.delete, color: Colors.white,))
+          ],
+        ),
         SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

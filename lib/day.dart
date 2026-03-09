@@ -12,17 +12,21 @@ class day extends StatefulWidget {
 
 class _dayState extends State<day> {
   late Map Day;
+  late bool edited;
 
   @override
   void initState() {
     super.initState();
+    edited = false;
     Day = (this.widget.Day);
   }
 
   Future<List<Widget>> buildCards() async{
     List<Widget> cards = [];
+    int index = 0;
     for (var i in Day['consumed']){
-      await consumed_card(i).then((value) => cards.add(value));
+      await consumed_card(context, i, index).then((value) => cards.add(value));
+      index += 1;
     }
     return cards;
   }
@@ -30,6 +34,7 @@ class _dayState extends State<day> {
   add_consumed() async {
     final result = await AddConsumed(context, this.widget.Day['day_id']);
     Day = await Days().getById(this.widget.Day['day_id']);
+    edited = true;
     if (result == true) {
       setState(() {});
     }
@@ -39,7 +44,13 @@ class _dayState extends State<day> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, edited);
+            },)
+      ),
       body: Center(
         child: Container(
           width: screenWidth * 0.9,

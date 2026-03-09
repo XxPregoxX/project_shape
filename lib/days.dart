@@ -19,6 +19,10 @@ class _daysState extends State<days> {
     List<Map<String, dynamic>> days = await Days().getAll();
     return days;
   }
+
+  void update(){
+    setState(() {});
+  }
     
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,7 @@ class _daysState extends State<days> {
                 itemCount: days.length,
                 itemBuilder: (context, index){
                   var day = days[index];
-                  return day_card(context, day);
+                  return day_card(context, day, update);
                 },
               );
             }else{

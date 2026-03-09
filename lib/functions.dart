@@ -58,6 +58,20 @@ class Ingredients{
     );
   }
 
+  //função para testes
+  Future<void> restoreAll() async {
+  final db = await DatabaseHelper.database;
+
+  await db.update(
+    'ingredients',
+    {
+      'deleted': 0,
+    },
+    where: 'deleted = ?',
+    whereArgs: [1],
+  );
+}
+
   Future<List<Map<String, dynamic>>> getIngredients({
   String? search
   }) async {
@@ -164,6 +178,20 @@ class Recipes{
     whereArgs: [id],
     );
   }
+
+  //função para testes
+  Future<void> restoreAll() async {
+  final db = await DatabaseHelper.database;
+
+  await db.update(
+    'recipes',
+    {
+      'deleted': 0,
+    },
+    where: 'deleted = ?',
+    whereArgs: [1],
+  );
+}
 
   getByid(int id) async{
     final db = await DatabaseHelper.database;
@@ -346,6 +374,12 @@ add_days() async {
     whereArgs: [day_id],
     );
   }
+
+  void remove_consumed(String day_id) async{
+    final db = await DatabaseHelper.database;
+    // continuar aqui depois
+  }
+
 } 
 
 class Profile{

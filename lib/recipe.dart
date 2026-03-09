@@ -27,6 +27,11 @@ class _recipeState extends State<recipe> {
       edited = true;
       setState(() {});
     }
+
+  delete_recipe() async{
+    await Recipes().delete(Recipe['id']);
+    Navigator.pop(context, true);
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -48,11 +53,22 @@ class _recipeState extends State<recipe> {
               Row(
                 children: [
                   titleText(Recipe['name']),
-                  IconButton(onPressed: (){
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: Recipe))).then((value) async{
-                        update_recipe();
+                      update_recipe();
                     });
-                  }, icon: Icon(Icons.mode_edit, color: Colors.white))
+                  }, icon: Icon(Icons.mode_edit,  color: Colors.white)),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: (){
+                    delete_confirmation(context, delete_recipe);
+                  }, icon: Icon(Icons.delete, color: Colors.white))
                 ],
               ),
               SizedBox(height: 20),
