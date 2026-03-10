@@ -375,10 +375,59 @@ add_days() async {
     );
   }
 
-  void remove_consumed(String day_id) async{
-    final db = await DatabaseHelper.database;
-    // continuar aqui depois
-  }
+  Future<void> removeConsumed(String day_id, int index) async {
+  final db = await DatabaseHelper.database;
+  Map Day = await getById(day_id);
+
+  List consumed = Day['consumed'] == '' ? [] : Day['consumed'];
+
+  var item = consumed[index];
+  Map food = item[0] == 'recipe' ? await Recipes().getByid(item[1]) : await Ingredients().getByid(item[1]);
+  double weight = item[2];
+
+  double baseWeight = item[0] == 'ingredient'
+      ? 1000
+      : food['weight'];
+
+  double factor = weight / baseWeight;
+
+  double calories_raw =
+      Day['calories_consumed'] - food['calories'] * factor;
+
+  double protein_raw =
+      Day['protein_consumed'] - food['protein'] * factor;
+
+  double carbs_raw =
+      Day['carbs_consumed'] - food['carbs'] * factor;
+
+  double fats_raw =
+      Day['fats_consumed'] - food['fats'] * factor;
+
+  double cost_raw =
+      Day['costs'] - food['price'] * factor;
+
+  double calories = double.parse(calories_raw.toStringAsFixed(2));
+  double protein = double.parse(protein_raw.toStringAsFixed(2));
+  double carbs = double.parse(carbs_raw.toStringAsFixed(2));
+  double fats = double.parse(fats_raw.toStringAsFixed(2));
+  double cost = double.parse(cost_raw.toStringAsFixed(2));
+
+  consumed.removeAt(index);
+
+  await db.update(
+    'days',
+    {
+      'costs': cost,
+      'calories_consumed': calories,
+      'protein_consumed': protein,
+      'carbs_consumed': carbs,
+      'fats_consumed': fats,
+      'consumed': jsonEncode(consumed),
+    },
+    where: 'day_id = ?',
+    whereArgs: [day_id],
+  );
+}
 
 } 
 

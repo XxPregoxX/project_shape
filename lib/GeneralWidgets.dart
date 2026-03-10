@@ -522,9 +522,9 @@ day_grid(Map day){
   );
 }
 
-consumed_card(BuildContext context, List consumed, int index) async {
+consumed_card(BuildContext context, List consumed, VoidCallback action) async {
   Map item;
-  double factor = 1000 / consumed[2];
+  double factor = consumed[2] / 1000;
   if (consumed[0] == 'recipe' ){
     item = await Recipes().getByid(consumed[1]);
     factor = consumed[2] / item['weight'];
@@ -533,9 +533,6 @@ consumed_card(BuildContext context, List consumed, int index) async {
     item = await Ingredients().getByid(consumed[1]);
   }
 
-  void delete_consumed(){
-    
-  }
 
   return Container(
     padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
@@ -557,7 +554,7 @@ consumed_card(BuildContext context, List consumed, int index) async {
                 constraints: const BoxConstraints(),
                 visualDensity: VisualDensity.compact,
                 onPressed: (){
-                delete_confirmation(context, delete_consumed);
+                delete_confirmation(context, action);
               }, icon: Icon(Icons.delete, color: Colors.white,))
           ],
         ),

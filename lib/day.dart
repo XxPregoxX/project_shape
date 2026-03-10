@@ -21,19 +21,25 @@ class _dayState extends State<day> {
     Day = (this.widget.Day);
   }
 
+  remove_consumed(int index)async{
+    await Days().removeConsumed(Day['day_id'], index);
+    Day = await Days().getById(Day['day_id']);
+    edited = true;
+    setState(() {});
+  }
+
   Future<List<Widget>> buildCards() async{
     List<Widget> cards = [];
-    int index = 0;
-    for (var i in Day['consumed']){
-      await consumed_card(context, i, index).then((value) => cards.add(value));
-      index += 1;
+    for (int index = 0; index < Day['consumed'].length; index++){
+      var i = Day['consumed'][index];
+      await consumed_card(context, i, (){remove_consumed(index);}).then((value) => cards.add(value));
     }
     return cards;
   }
 
   add_consumed() async {
-    final result = await AddConsumed(context, this.widget.Day['day_id']);
-    Day = await Days().getById(this.widget.Day['day_id']);
+    final result = await AddConsumed(context, Day['day_id']);
+    Day = await Days().getById(Day['day_id']);
     edited = true;
     if (result == true) {
       setState(() {});
