@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:project_shape/GeneralWidgets.dart';
-import 'package:project_shape/Recipes.dart';
 import 'package:project_shape/addRecipe.dart';
 import 'package:project_shape/functions.dart';
 

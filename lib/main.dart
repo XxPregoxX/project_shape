@@ -6,7 +6,6 @@ import 'package:project_shape/Page.dart';
 import 'package:project_shape/addRecipe.dart';
 import 'package:project_shape/days.dart';
 import 'package:project_shape/functions.dart';
-import 'package:project_shape/recipe.dart';
 import 'package:project_shape/profile.dart';
 
 void main() async{

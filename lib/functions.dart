@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 class Ingredients{
 
-  insert(String name, double price, double calories, double proteins, double carbs, double fats)async{
+  Future<void> insert(String name, double price, double calories, double proteins, double carbs, double fats)async{
     final db = await DatabaseHelper.database;
     await db.insert(
       'ingredients',
@@ -58,50 +58,38 @@ class Ingredients{
     );
   }
 
-  //função para testes
-  Future<void> restoreAll() async {
-  final db = await DatabaseHelper.database;
-
-  await db.update(
-    'ingredients',
-    {
-      'deleted': 0,
-    },
-    where: 'deleted = ?',
-    whereArgs: [1],
-  );
-}
-
   Future<List<Map<String, dynamic>>> getIngredients({
   String? search
   }) async {
   final db = await DatabaseHelper.database;
-  String where = 'deleted = 0';
-  List whereArgs = [];
+  String where = 'deleted = ?';
+  List whereArgs = [0];
   if (search != null && search.trim().isNotEmpty) {
     where += ' AND name LIKE ?';
     whereArgs.add('%$search%');
   }
 
-  dynamic teste = await db.query(
+  return await db.query(
     'ingredients',
     orderBy: 'id',
     where: where,
     whereArgs: whereArgs
   );
-  return teste;
   }
 
-  getAllNonDeleted() async{
+  Future<List<Map<String, dynamic>>> getAllNonDeleted() async{
     final db = await DatabaseHelper.database;
-    return await db.query('ingredients', where: 'deleted = 0');
+    return await db.query('ingredients', 
+    where: 'deleted = ?',
+    whereArgs: [0]);
   }
 
-  getByid(int id) async{
+  Future<Map<String, dynamic>> getByid(int id) async{
     final db = await DatabaseHelper.database;
-    dynamic result = await db.query(
+    final result = await db.query(
     'ingredients',
-    where: 'id = $id',
+    where: "id = ?",
+    whereArgs: [id]
     );
     return Map.from(result.first);
   }
@@ -111,7 +99,7 @@ class Ingredients{
 class Recipes{
 
 
-  insert(String name, Map<int, double> ingredients, String description, double price, double calories, double protein, double carbs, double fats)async{
+  Future<void> insert(String name, Map<int, double> ingredients, String description, double price, double calories, double protein, double carbs, double fats)async{
     final db = await DatabaseHelper.database;
     final mapStringKey = ingredients.map(
     (key, value) => MapEntry(key.toString(), value),
@@ -133,7 +121,7 @@ class Recipes{
     );
   }
 
-  Future<void> update(int id, String name, Map ingredients, String description, double price, double calories, double protein, double carbs, double fats) async{
+  Future<void> update(int id, String name, Map<int, double> ingredients, String description, double price, double calories, double protein, double carbs, double fats) async{
     final db = await DatabaseHelper.database;
     final mapStringKey = ingredients.map(
     (key, value) => MapEntry(key.toString(), value),
@@ -179,25 +167,12 @@ class Recipes{
     );
   }
 
-  //função para testes
-  Future<void> restoreAll() async {
-  final db = await DatabaseHelper.database;
-
-  await db.update(
-    'recipes',
-    {
-      'deleted': 0,
-    },
-    where: 'deleted = ?',
-    whereArgs: [1],
-  );
-}
-
-  getByid(int id) async{
+  Future<Map<String, Object?>>getByid(int id) async{
     final db = await DatabaseHelper.database;
-    dynamic result = await db.query(
+    final result = await db.query(
     'recipes',
-    where: 'id = $id',
+    where: "id = ?",
+    whereArgs: [id]
     );
     return Map.from(result.first);
   }
@@ -206,8 +181,8 @@ class Recipes{
   String? search
   }) async {
   final db = await DatabaseHelper.database;
-  String where = 'deleted = 0';
-  List whereArgs = [];
+  String where = 'deleted = ?';
+  List whereArgs = [0];
 
   if (search != null && search.trim().isNotEmpty) {
     where += ' AND name LIKE ?';
@@ -222,23 +197,18 @@ class Recipes{
   );
   }
 
-  getAllNonDeleted() async{
+  Future<List<Map<String, Object?>>> getAllNonDeleted() async{
     final db = await DatabaseHelper.database;
-    return await db.query('recipes', where: 'deleted = 0');
+    return await db.query('recipes', 
+    where: 'deleted = ?',
+    whereArgs: [0]);
   }
-
-  // função de testes
-  getAll() async{
-    final db = await DatabaseHelper.database;
-    return await db.query('recipes');
-    }
 }
 
 class Days{
 
-  insert(String dayId, double costGoal, double caloriesGoal, double proteinGoal, double carbsGoal, double fatsGoal, String createdAt)async{
+  Future<void> insert(String dayId, double costGoal, double caloriesGoal, double proteinGoal, double carbsGoal, double fatsGoal, String createdAt)async{
     final db = await DatabaseHelper.database;
-    final now = DateTime.now();
     await db.insert(
       'days',
       {
@@ -254,51 +224,49 @@ class Days{
         'carbs_consumed': 0,
         'fats_consumed': 0,
         'consumed': '',
-        'created_at': now.toIso8601String(),
+        'created_at': createdAt,
       }
     );
   }
   DateTime normalize(DateTime d) {
   return DateTime(d.year, d.month, d.day);
- }
+  }
 
- Daydiff(DateTime a, DateTime b) {
+ int Daydiff(DateTime a, DateTime b) {
   a = normalize(a);
   b = normalize(b);
   return a.difference(b).inDays;
  }
 
- String dayIdToDate(dynamic dayId) {
-  final s = dayId.toString();
+ String dayIdToDate(String dayId) {
 
-  final year = s.substring(0, 4);
-  final month = s.substring(4, 6);
-  final day = s.substring(6, 8);
-
+  final year = dayId.substring(0, 4);
+  final month = dayId.substring(4, 6);
+  final day = dayId.substring(6, 8);
   return '$day/$month/$year';
 }
  
-add_days() async {
- Map<String, dynamic>? goals = await Profile().getCurrentGoals();
+  Future<void> add_days() async {
+   Map<String, dynamic>? goals = await Profile().getCurrentGoals();
 
- // verificar se tem goals, se n tiver n precisa add os dias pq n tem como preencher os dias sem os goals
+   // verificar se tem goals, se n tiver n precisa add os dias pq n tem como preencher os dias sem os goals
 
- if (goals == null) return;
- if (await isTableEmpty()){
-   String today = normalize(DateTime.now()).toString().split(' ').first.replaceAll('-', '');
-   await insert(today, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], DateTime.now().toIso8601String()); // depois que tiver os goals ajustar aq
- } else {
-    Map<String, dynamic>? lastDay = await getLastDay();
-    DateTime lastDate = DateTime.parse(lastDay!['created_at']);
-    int diff = Daydiff(DateTime.now(), lastDate);
-    for (int i = 1; i <= diff; i++){
-      DateTime newDate = lastDate.add(Duration(days: i));
-      String dayId = normalize(newDate).toString().split(' ').first.replaceAll('-', '');
-      insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String()); // depois que tiver os goals ajustar aq
-    }
- }
- return;
-}
+   if (goals == null) return;
+   if (await isTableEmpty()){
+     String today = normalize(DateTime.now()).toString().split(' ').first.replaceAll('-', '');
+     await insert(today, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], DateTime.now().toIso8601String()); // depois que tiver os goals ajustar aq
+   } else {
+      Map<String, dynamic>? lastDay = await getLastDay();
+      DateTime lastDate = DateTime.parse(lastDay!['created_at']);
+      int diff = Daydiff(DateTime.now(), lastDate);
+      for (int i = 1; i <= diff; i++){
+        DateTime newDate = lastDate.add(Duration(days: i));
+        String dayId = normalize(newDate).toString().split(' ').first.replaceAll('-', '');
+        insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String()); // depois que tiver os goals ajustar aq
+      }
+   }
+   return;
+  }
 
  Future<bool> isTableEmpty() async {
   final db = await DatabaseHelper.database;
@@ -308,9 +276,9 @@ add_days() async {
   );
 
   return result == 0;
-}
+  }
 
-  getAll() async{
+  Future<List<Map<String, Object?>>> getAll() async{
     final db = await DatabaseHelper.database;
     return await db.query('days');
     }
@@ -328,14 +296,15 @@ add_days() async {
     return result.first;
   }
 
-  Future<Map> getById(String id) async{
+  Future<Map<String, dynamic>> getById(String id) async{
     final db = await DatabaseHelper.database;
     final result = await db.query(
     'days',
-    where: 'day_id = $id',
+    where: 'day_id = ?',
+    whereArgs: [id],
     limit: 1,
   );
-  Map resultMap = Map.from(result.first);
+  Map<String, dynamic> resultMap = Map.from(result.first);
   resultMap['consumed'] = resultMap['consumed'] == '' ? [] : jsonDecode(resultMap['consumed'] as String);
   return resultMap;
   }
@@ -432,7 +401,7 @@ add_days() async {
 } 
 
 class Profile{
-  insert(String name, double height, String birthDate)async{
+  Future<void> insert(String name, double height, String birthDate)async{
     final db = await DatabaseHelper.database;
     await db.insert(
       'profile',
@@ -445,9 +414,9 @@ class Profile{
     );
   }
 
-  getProfile() async{
+  Future<Map<String, dynamic>?> getProfile() async{
     final db = await DatabaseHelper.database;
-    dynamic result = await db.query('profile', where: 'id = 1', limit: 1);
+    final result = await db.query('profile', where: 'id = 1', limit: 1);
     if (result.isEmpty) return null;
     return Map.from(result.first);
   }
@@ -470,7 +439,7 @@ class Profile{
     );
   }
 
-  goalInsert(double weight, double cost, double calories, double protein, double carbs, double fats) async {
+  Future<void> goalInsert(double weight, double cost, double calories, double protein, double carbs, double fats) async {
     final db = await DatabaseHelper.database;
     final now = DateTime.now();
     await db.insert(
@@ -486,7 +455,7 @@ class Profile{
       }
     );
   }
-  getCurrentGoals() async {
+  Future<Map<String, dynamic>?>getCurrentGoals() async {
     final db = await DatabaseHelper.database;
     final result = await db.query(
       'goals',
@@ -494,9 +463,10 @@ class Profile{
       limit: 1,
     );
     if (result.isEmpty) return null;
-    return result.first;
+    return Map.from(result.first);
   }
-  getAllGoals() async {
+
+  Future<List<Map<String, Object?>>> getAllGoals() async {
     final db = await DatabaseHelper.database;
     return await db.query('goals', orderBy: 'created_at DESC');
   }

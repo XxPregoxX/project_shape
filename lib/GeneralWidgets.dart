@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_shape/AddIngredient.dart';
-import 'package:project_shape/Ingredients.dart';
 import 'package:project_shape/day.dart';
 import 'package:project_shape/functions.dart';
 import 'package:project_shape/recipe.dart';
@@ -46,7 +45,7 @@ Widget infoText(String label, String value) {
   );
 }
 
-search_bar(String hint, TextEditingController? controller){
+Widget search_bar(String hint, TextEditingController? controller){
            return Container(
             margin: const EdgeInsets.fromLTRB(0, 40, 0, 8),
              child: TextField(
@@ -66,7 +65,7 @@ search_bar(String hint, TextEditingController? controller){
            );
 }
 
-recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback callback){
+Widget recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback callback){
   String name = Recipe['name'];
   double calories = Recipe['calories']; 
   double protein = Recipe['protein'];
@@ -121,7 +120,7 @@ recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallback call
   ); 
 }
 
-delete_confirmation(BuildContext context, VoidCallback action){
+Future<void> delete_confirmation(BuildContext context, VoidCallback action){
  return  showDialog(
    context: context,
    builder: (_) {
@@ -143,7 +142,7 @@ delete_confirmation(BuildContext context, VoidCallback action){
  );
 }
 
-ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCallback? onUpdate]) {
+Widget ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCallback? onUpdate]) {
   String name = ingredient['name'];
   double calories = ingredient['calories']; 
   double protein = ingredient['protein'];
@@ -156,7 +155,7 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
     onUpdate!();
   }
 
-  return  Container(
+  return Container(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
       width: double.infinity,
@@ -214,10 +213,61 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
     );
 }
 
-  day_card(context, Map<String, dynamic> cardDay, VoidCallback action){
-    Map cardDayFix = Map.from(cardDay);
-    cardDayFix['consumed'] = cardDayFix['consumed'] == '' ? [] : jsonDecode(cardDayFix['consumed'] as String);
-    return GestureDetector(
+Widget goal_card(Map goal){
+  double calories = goal['calories'];
+  double protein = goal['protein'];
+  double carbs = goal['carbs'];
+  double fats = goal['fats'];
+  double cost = goal['cost'];
+  double weight = goal['weight'];
+  return Container(
+    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+    margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.white),
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('${weight.round()} KG', style: TextStyle(
+              fontSize: 15
+            ),),
+            SizedBox(width: 20),
+            Text('Gasto: ${cost.round()} R\$', style: TextStyle(
+              fontSize: 15
+            ),),
+          ],
+        ),
+        SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Kcal: ${calories.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Prot: ${protein.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Carb: ${carbs.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+            Text('Gord: ${fats.round()}', style: TextStyle(
+              fontSize: 15
+            ),),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget day_card(context, Map<String, dynamic> cardDay, VoidCallback action){
+  Map cardDayFix = Map.from(cardDay);
+  cardDayFix['consumed'] = cardDayFix['consumed'] == '' ? [] : jsonDecode(cardDayFix['consumed'] as String);
+  return GestureDetector(
     onTap: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) => day(Day: cardDayFix))).then((result){
         if (result == true){
@@ -249,21 +299,20 @@ ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [VoidCall
   );
 }
 
-getIngredientsAndRecipes() async {
+Future<List> getIngredientsAndRecipes() async {
   List ingredientsRaw = await Ingredients().getAllNonDeleted();
-
   List ingredients = ingredientsRaw.map((item) => {...item, 'type': 'ingredient'}).toList();
   List recipesRaw = await Recipes().getAllNonDeleted();
   List recipes = recipesRaw.map((item) => {...item, 'type': 'recipe'}).toList();
   return ingredients + recipes;
 }
 
+//tem que ser stateless tmb
 AddConsumed(BuildContext context, String day_id) {
   final controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   Map selected = {};
   
-
   return showDialog(
     context: context,
     builder: (_) {
@@ -379,7 +428,7 @@ edit_profile(BuildContext context, [List? profileData]) {
     );
   });
 }
-
+// tem que ser um stateless
 add_goal(BuildContext context){
   TextEditingController caloriesController = TextEditingController();
   TextEditingController proteinController = TextEditingController();
@@ -429,58 +478,7 @@ add_goal(BuildContext context){
   });
 }
 
-Widget goal_card(Map goal){
-  double calories = goal['calories'];
-  double protein = goal['protein'];
-  double carbs = goal['carbs'];
-  double fats = goal['fats'];
-  double cost = goal['cost'];
-  double weight = goal['weight'];
-  return Container(
-    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
-    margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
-    width: double.infinity,
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.white),
-    ),
-    child: Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('${weight.round()} KG', style: TextStyle(
-              fontSize: 15
-            ),),
-            SizedBox(width: 20),
-            Text('Gasto: ${cost.round()} R\$', style: TextStyle(
-              fontSize: 15
-            ),),
-          ],
-        ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Kcal: ${calories.round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Prot: ${protein.round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Carb: ${carbs.round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Gord: ${fats.round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-day_grid(Map day){
+Widget day_grid(Map day){
   Widget gridblock(dynamic child){ 
     return Container(
       width: 70,
@@ -522,7 +520,7 @@ day_grid(Map day){
   );
 }
 
-consumed_card(BuildContext context, List consumed, VoidCallback action) async {
+Future<Widget> consumed_card(BuildContext context, List consumed, VoidCallback action) async {
   Map item;
   double factor = consumed[2] / 1000;
   if (consumed[0] == 'recipe' ){
@@ -581,7 +579,7 @@ consumed_card(BuildContext context, List consumed, VoidCallback action) async {
   );
 }
 
-general_textfield({ required String label, required TextEditingController controler, bool digitOnly = false}){
+Widget general_textfield({ required String label, required TextEditingController controler, bool digitOnly = false}){
   return TextFormField(
     controller: controler,
     validator: (value) {
@@ -608,7 +606,7 @@ general_textfield({ required String label, required TextEditingController contro
   );
 }
 
-value_textfield({ required String label, required TextEditingController controler}){
+Widget value_textfield({ required String label, required TextEditingController controler}){
   return TextFormField(
     controller: controler,
     validator: (value) {
@@ -639,7 +637,7 @@ value_textfield({ required String label, required TextEditingController controle
   );
 }
 
-split_textfield(String label1, String label2, TextEditingController controler1, TextEditingController controller2){
+Widget split_textfield(String label1, String label2, TextEditingController controler1, TextEditingController controller2){
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -650,7 +648,7 @@ split_textfield(String label1, String label2, TextEditingController controler1, 
   );
 }
 
-confirmar_button(String text, VoidCallback onPressed){
+Widget confirmar_button(String text, VoidCallback onPressed){
   return ElevatedButton(
     onPressed: onPressed,
     style: ElevatedButton.styleFrom(
@@ -706,8 +704,6 @@ add_ingredient_form(BuildContext context, [Map<String, dynamic>? ingredientData]
       }
       Ingredients().insert(name, price, kcal, prot, carb, fat);
       Navigator.pop(context, true);
-    } else {
-      print('Form inválido');
     }
         }),
       ],
@@ -923,7 +919,7 @@ class GeneralDropdown extends StatelessWidget {
 }
 }
 
-ingredient_added_row(String name, TextEditingController controller, size){
+Widget ingredient_added_row(String name, TextEditingController controller, size){
   return Container(
     margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
     child: Row(

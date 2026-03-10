@@ -16,7 +16,6 @@ class _ingredientsState extends State<ingredients> {
     bool isLoading = false;
     bool hasMore = true;
     late TextEditingController searchController;
-    final ScrollController _controller = ScrollController();
 
     Future<void> Update() async {
       ingredients = await Ingredients().getIngredients(
