@@ -8,7 +8,7 @@ import 'package:project_shape/days.dart';
 import 'package:project_shape/functions.dart';
 import 'package:project_shape/profile.dart';
 
-void main() async{
+Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Days().add_days();
   runApp(const MyApp());

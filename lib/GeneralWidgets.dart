@@ -307,83 +307,110 @@ Future<List> getIngredientsAndRecipes() async {
   return ingredients + recipes;
 }
 
-//tem que ser stateless tmb
-AddConsumed(BuildContext context, String day_id) {
-  final controller = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  Map selected = {};
-  
-  return showDialog(
-    context: context,
-    builder: (_) {
-      return AlertDialog(
-        title: Text('Nome'),
-        content: FutureBuilder(future: getIngredientsAndRecipes(), builder: (context, snapshot){
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return Text('Erro ao carregar ingredientes e receitas');
-          } else {
-            List items = snapshot.data as List;
-            return Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Selecione',
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                      ),
-                    ),
-                    items: List.generate(items.length, (index) {
-                      return DropdownMenuItem<int>(
-                        value: index,
-                        child: Text(items[index]['name']),
-                      );
-                    }),
-                      validator: (value) {
-                        if (value == null) return 'Selecione um ingrediente';
-                        return null;
-                      },
-                    onChanged: (value) {
-                      selected = items[value!];
-                    },
-                  ),
-                  general_textfield(label: 'Quantidade (g)', controler: controller)
-                ],
-              ),
-            );
-          }
-        }),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (_formKey.currentState?.validate() ?? false) {
-                Days().addConsumed(day_id, selected, double.parse(controller.text)).then((_) {
-                  Navigator.pop(context, true);
-                });
-              }
-            },
-            child: Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
+Future<void> add_consumed(BuildContext context, String day_id, VoidCallback action) async{
+  final result = await showDialog(context: context, builder: (_) => addConsumed(day_id: day_id));
+  if (result == true) {
+      action();
+    }
 }
 
-// isso tmb tem que ser un stateless widget
-edit_profile(BuildContext context, [List? profileData]) {
-  TextEditingController nameController = TextEditingController(text: profileData != null ? profileData[0] : '');
-  TextEditingController birthController = TextEditingController(text: profileData != null ? profileData[1] : '');
-  TextEditingController heightController = TextEditingController(text: profileData != null ? profileData[2] : '');
+class addConsumed extends StatelessWidget {
+  addConsumed({super.key, required this.day_id});
+  final String day_id;
+  final controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  return showDialog(context: context, builder: (context) {
+  final Map selected = {};
+  
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+          title: Text('Nome'),
+          content: FutureBuilder(future: getIngredientsAndRecipes(), builder: (context, snapshot){
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Text('Erro ao carregar ingredientes e receitas');
+            } else {
+              List items = snapshot.data as List;
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'Selecione',
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                      ),
+                      items: List.generate(items.length, (index) {
+                        return DropdownMenuItem<int>(
+                          value: index,
+                          child: Text(items[index]['name']),
+                        );
+                      }),
+                        validator: (value) {
+                          if (value == null) return 'Selecione um ingrediente';
+                          return null;
+                        },
+                      onChanged: (value) {
+                        selected.clear();
+                        selected.addAll(items[value!]);
+                      },
+                    ),
+                    general_textfield(label: 'Quantidade (g)', controler: controller)
+                  ],
+                ),
+              );
+            }
+          }),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  Days().addConsumed(day_id, selected, double.parse(controller.text)).then((_) {
+                    Navigator.pop(context, true);
+                  });
+                }
+              },
+              child: Text('OK'),
+            ),
+          ],
+  );
+  }
+}
+
+Future<void> edit_profile(BuildContext context, VoidCallback action, [List? profileData]) async{
+  final result = await showDialog(context: context, builder: (_) => editProfile(profileData: profileData,));
+  if (result == true) {
+      action();
+    }
+}
+
+class editProfile extends StatelessWidget {
+  editProfile({super.key, this.profileData})
+        : nameController = TextEditingController(
+          text: profileData != null ? profileData[0] : '',
+        ),
+        birthController = TextEditingController(
+          text: profileData != null ? profileData[1] : '',
+        ),
+        heightController = TextEditingController(
+          text: profileData != null ? profileData[2] : '',
+        );
+
+  final List? profileData;
+  final TextEditingController nameController;
+  final TextEditingController birthController;
+  final TextEditingController heightController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       backgroundColor: Color(0xFF191919),
@@ -426,18 +453,28 @@ edit_profile(BuildContext context, [List? profileData]) {
         )
       ),
     );
-  });
+  }
 }
-// tem que ser um stateless
-add_goal(BuildContext context){
-  TextEditingController caloriesController = TextEditingController();
-  TextEditingController proteinController = TextEditingController();
-  TextEditingController carbsController = TextEditingController();
-  TextEditingController fatsController = TextEditingController();
-  TextEditingController costController = TextEditingController();
-  TextEditingController weightController = TextEditingController();
+
+add_goal(BuildContext context, VoidCallback action) async{
+  final result = await showDialog(context: context, builder: (_) => addGoal());
+  if (result == true) {
+    action();
+  }
+}
+
+class addGoal extends StatelessWidget {
+  addGoal({super.key});
+  final TextEditingController caloriesController = TextEditingController();
+  final TextEditingController proteinController = TextEditingController();
+  final TextEditingController carbsController = TextEditingController();
+  final TextEditingController fatsController = TextEditingController();
+  final TextEditingController costController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  return showDialog(context: context, builder: (context) {
+
+  @override
+  Widget build(BuildContext context) {
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       backgroundColor: Color(0xFF191919),
@@ -475,7 +512,7 @@ add_goal(BuildContext context){
         )
       ),
     );
-  });
+  }
 }
 
 Widget day_grid(Map day){
@@ -665,17 +702,35 @@ Widget confirmar_button(String text, VoidCallback onPressed){
   );
 }
 
-// isso tem que ser um stateless widget
-add_ingredient_form(BuildContext context, [Map<String, dynamic>? ingredientData]) {
+class addIngredientForm extends StatelessWidget {
+  addIngredientForm({super.key, this.ingredientData})
+    : nameController = TextEditingController(
+          text: ingredientData?['name'] ?? ''),
+      kcalController = TextEditingController(
+          text: ingredientData?['calories']?.round().toString() ?? ''),
+      carbController = TextEditingController(
+          text: ingredientData?['carbs']?.round().toString() ?? ''),
+      protController = TextEditingController(
+          text: ingredientData?['protein']?.round().toString() ?? ''),
+      fatController = TextEditingController(
+          text: ingredientData?['fats']?.round().toString() ?? ''),
+      priceController = TextEditingController(
+          text: ingredientData?['price']?.toString() ?? '');
+
+  final Map<String, dynamic>? ingredientData;
+
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController(text: ingredientData != null ? ingredientData['name'] : '');
-  final TextEditingController kcalController = TextEditingController(text: ingredientData != null ? ingredientData['calories'].round().toString() : '');
-  final TextEditingController carbController = TextEditingController(text: ingredientData != null ? ingredientData['carbs'].round().toString() : '');
-  final TextEditingController protController = TextEditingController(text: ingredientData != null ? ingredientData['protein'].round().toString() : '');
-  final TextEditingController fatController = TextEditingController(text: ingredientData != null ? ingredientData['fats'].round().toString() : '');
-  final TextEditingController priceController = TextEditingController(text: ingredientData != null ? ingredientData['price'].toString() : '');
-  // Todos os controllers acime não estão sendo descartados, o que pode causar memory leaks em uso prolongado.
-  return Form(
+
+  final TextEditingController nameController;
+  final TextEditingController kcalController;
+  final TextEditingController carbController;
+  final TextEditingController protController;
+  final TextEditingController fatController;
+  final TextEditingController priceController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
     key: _formKey,
     child: Column(
       children: [
@@ -689,26 +744,26 @@ add_ingredient_form(BuildContext context, [Map<String, dynamic>? ingredientData]
         SizedBox(height: 20),
         confirmar_button('Confirmar', () {
           if (_formKey.currentState!.validate()) {
-      // tudo válido
-      double kcal = double.parse(kcalController.text);
-      double carb = double.parse(carbController.text);
-      double prot = double.parse(protController.text);
-      double fat = double.parse(fatController.text);
-      double price = double.parse(priceController.text);
-      String name = nameController.text;
-      if (ingredientData != null) {
-        Ingredients().update(ingredientData['id'], name, price, kcal, prot, carb, fat).then((_) {
-          Navigator.pop(context, true);
-        });
-        return;
-      }
-      Ingredients().insert(name, price, kcal, prot, carb, fat);
-      Navigator.pop(context, true);
-    }
+            double kcal = double.parse(kcalController.text);
+            double carb = double.parse(carbController.text);
+            double prot = double.parse(protController.text);
+            double fat = double.parse(fatController.text);
+            double price = double.parse(priceController.text);
+            String name = nameController.text;
+            if (ingredientData != null) {
+              Ingredients().update(ingredientData!['id'], name, price, kcal, prot, carb, fat).then((_) {
+                Navigator.pop(context, true);
+              });
+              return;
+            }
+            Ingredients().insert(name, price, kcal, prot, carb, fat);
+            Navigator.pop(context, true);
+          }
         }),
       ],
     ),
   );
+  }
 }
 
 class AddRecipeForm extends StatefulWidget {
@@ -825,8 +880,8 @@ class _AddRecipeForm extends State<AddRecipeForm> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Colors.white, // cor da borda
-                  width: 1,            // espessura
+                  color: Colors.white,
+                  width: 1,
                 ),
               ),
             ),
@@ -871,7 +926,6 @@ class _AddRecipeForm extends State<AddRecipeForm> {
               return;
             }
             if (_formKey.currentState!.validate()) {
-              // tudo válido
               submit_recipe(nameController.text, obsController.text);
             } 
 

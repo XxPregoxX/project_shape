@@ -248,13 +248,10 @@ class Days{
  
   Future<void> add_days() async {
    Map<String, dynamic>? goals = await Profile().getCurrentGoals();
-
-   // verificar se tem goals, se n tiver n precisa add os dias pq n tem como preencher os dias sem os goals
-
    if (goals == null) return;
    if (await isTableEmpty()){
      String today = normalize(DateTime.now()).toString().split(' ').first.replaceAll('-', '');
-     await insert(today, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], DateTime.now().toIso8601String()); // depois que tiver os goals ajustar aq
+     await insert(today, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], DateTime.now().toIso8601String());
    } else {
       Map<String, dynamic>? lastDay = await getLastDay();
       DateTime lastDate = DateTime.parse(lastDay!['created_at']);
@@ -262,7 +259,7 @@ class Days{
       for (int i = 1; i <= diff; i++){
         DateTime newDate = lastDate.add(Duration(days: i));
         String dayId = normalize(newDate).toString().split(' ').first.replaceAll('-', '');
-        insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String()); // depois que tiver os goals ajustar aq
+        insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String());
       }
    }
    return;

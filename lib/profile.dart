@@ -11,18 +11,12 @@ class profile extends StatefulWidget {
 
 class _profileState extends State<profile> {
   
-  editProfile(BuildContext context, [List? profileData]) async {
-    final result = await edit_profile(context, profileData);
-    if (result == true) {
-      setState(() {});
-    }
+  Future<void> editProfile(BuildContext context, [List? profileData]) async {
+    await edit_profile(context, (){setState(() {});}, profileData);
   }
 
-  addGoal(BuildContext context) async {
-    final result = await add_goal(context);
-    if (result == true) {
-      setState(() {});
-    }
+  Future<void> addGoal(BuildContext context) async {
+    await add_goal(context, (){setState(() {});});
   }
 
   @override

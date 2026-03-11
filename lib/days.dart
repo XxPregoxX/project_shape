@@ -11,13 +11,12 @@ class days extends StatefulWidget {
 
 class _daysState extends State<days> {
 
-  getDays() async {
+  Future<List<Map<String, dynamic>>> getDays() async {
     List<Map<String, dynamic>> goals = await Profile().getAllGoals();
     if (goals.isEmpty) {
       return [];
     }
-    List<Map<String, dynamic>> days = await Days().getAll();
-    return days;
+    return await Days().getAll();
   }
 
   void update(){

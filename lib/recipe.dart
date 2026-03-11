@@ -21,13 +21,13 @@ class _recipeState extends State<recipe> {
     Recipe = widget.Recipe;
   }
 
-  update_recipe() async{
+  Future<void> update_recipe() async{
       Recipe = await Recipes().getByid(Recipe['id']);
       edited = true;
       setState(() {});
     }
 
-  delete_recipe() async{
+  Future<void> delete_recipe() async{
     await Recipes().delete(Recipe['id']);
     Navigator.pop(context, true);
   }

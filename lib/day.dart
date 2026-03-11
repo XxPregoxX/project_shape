@@ -21,7 +21,7 @@ class _dayState extends State<day> {
     Day = (this.widget.Day);
   }
 
-  remove_consumed(int index)async{
+  Future<void> remove_consumed(int index)async{
     await Days().removeConsumed(Day['day_id'], index);
     Day = await Days().getById(Day['day_id']);
     edited = true;
@@ -37,13 +37,10 @@ class _dayState extends State<day> {
     return cards;
   }
 
-  add_consumed() async {
-    final result = await AddConsumed(context, Day['day_id']);
+  _add_consumed() async {
+    await add_consumed(context, Day['day_id'], (){setState(() {});});
     Day = await Days().getById(Day['day_id']);
     edited = true;
-    if (result == true) {
-      setState(() {});
-    }
   }
 
   @override
@@ -76,7 +73,7 @@ class _dayState extends State<day> {
                 }
               }),             
               ElevatedButton(onPressed: () {
-                add_consumed();
+                _add_consumed();
               }, child: Text('Adicionar refeição')),
             ],
           ),

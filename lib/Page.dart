@@ -30,8 +30,6 @@ class _MainLayoutState extends State<MainLayout> {
               children: pages,
             ),
           ),
-
-          // SUA BOTTOM BAR CUSTOM
           Container(
     height: 60,
     decoration: BoxDecoration(
