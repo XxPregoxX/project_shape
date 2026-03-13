@@ -38,7 +38,7 @@ class _recipesState extends State<recipes> {
     return Scaffold(
       body: Center(
         child: SizedBox(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(children: [
             search_bar('Pesquisar Receita', searchControler),
             Expanded(

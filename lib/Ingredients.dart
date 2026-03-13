@@ -49,7 +49,7 @@ class _ingredientsState extends State<ingredients> {
       body: Align(
           alignment: Alignment.topCenter,
           child: SizedBox(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(children: [
             search_bar('Pesquisar Ingrediente', searchController),
             Expanded(

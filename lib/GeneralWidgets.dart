@@ -8,12 +8,13 @@ import 'package:project_shape/recipe.dart';
 
 Widget titleText(String text) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 16),
+    padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
     child: Text(
       text,
       textAlign: TextAlign.center,
+      softWrap: true,
       style: const TextStyle(
-        fontSize: 30,
+        fontSize: 26,
         fontWeight: FontWeight.bold,
       ),
     ),
@@ -82,12 +83,12 @@ Widget recipe_card(BuildContext context, Map<String, dynamic> Recipe, VoidCallba
       );
     },
     child: Container(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 3),
+      padding: const EdgeInsets.fromLTRB(15, 14, 15, 4),
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
       width: double.infinity,
       decoration: BoxDecoration(
         color: Color(0xFF191919),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white),
       ),
       child: Column(
@@ -164,31 +165,50 @@ Widget ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [V
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Text('$name $price R\$', style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                visualDensity: VisualDensity.compact,
-                onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => add_ingredient(ingredientData: ingredient))).then((value) {
-                  if (onUpdate != null) {
-                    onUpdate();
-                  }
-                });
-              }, icon: Icon(Icons.mode_edit, color: Colors.white)),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                visualDensity: VisualDensity.compact,
-                onPressed: (){
-                delete_confirmation(context, delete_ingredient);
-              }, icon: Icon(Icons.delete, color: Colors.white,))
-            ],
+          Container(
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text('$name', style: TextStyle(
+                    fontSize: 20,
+                  ),
+                  softWrap: true,),
+                ),
+                Column(
+                  children: [
+                    Row(children: [
+                       IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => add_ingredient(ingredientData: ingredient))).then((value) {
+                            if (onUpdate != null) {
+                              onUpdate();
+                          }
+                        });
+                      }, icon: Icon(Icons.mode_edit, color: Colors.white)),
+                      IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: (){
+                            delete_confirmation(context, delete_ingredient);
+                          }, icon: Icon(Icons.delete, color: Colors.white,))
+                        ],),
+                        Text('$price R\$', style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),),
+            
+                  ],
+                ),
+               
+              ],
+            ),
           ),
           SizedBox(height: 15),
           Row(
@@ -616,7 +636,15 @@ Future<Widget> consumed_card(BuildContext context, List consumed, VoidCallback a
   );
 }
 
-Widget general_textfield({ required String label, required TextEditingController controler, bool digitOnly = false}){
+Widget general_textfield({required String label, required TextEditingController controler, bool digitOnly = false, int limit = 0}){
+
+  List<TextInputFormatter> formaters = [];
+  if (digitOnly){
+    formaters.add(FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')));
+  }
+  if (limit > 0){
+    formaters.add(LengthLimitingTextInputFormatter(limit));
+  }
   return TextFormField(
     controller: controler,
     validator: (value) {
@@ -628,7 +656,7 @@ Widget general_textfield({ required String label, required TextEditingController
           return null;
           },
     keyboardType: digitOnly ? TextInputType.number : TextInputType.text,
-    inputFormatters: digitOnly ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))] : null,
+    inputFormatters: formaters,
     decoration: InputDecoration(
       labelText: label,
       enabledBorder: OutlineInputBorder(
@@ -674,13 +702,13 @@ Widget value_textfield({ required String label, required TextEditingController c
   );
 }
 
-Widget split_textfield(String label1, String label2, TextEditingController controler1, TextEditingController controller2){
+Widget split_textfield(String label1, String label2, TextEditingController controler1, TextEditingController controller2, [int limit = 0]){
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Expanded(child: general_textfield(label: label1, controler:  controler1, digitOnly: true)),
+      Expanded(child: general_textfield(label: label1, controler:  controler1, digitOnly: true, limit: limit)),
       SizedBox(width: 40),
-      Expanded(child: general_textfield(label: label2, controler:  controller2, digitOnly: true)),
+      Expanded(child: general_textfield(label: label2, controler:  controller2, digitOnly: true, limit: limit)),
     ],
   );
 }
@@ -715,7 +743,7 @@ class addIngredientForm extends StatelessWidget {
       fatController = TextEditingController(
           text: ingredientData?['fats']?.round().toString() ?? ''),
       priceController = TextEditingController(
-          text: ingredientData?['price']?.toString() ?? '');
+          text: ingredientData?['price']?.round().toString() ?? '');
 
   final Map<String, dynamic>? ingredientData;
 
@@ -734,13 +762,13 @@ class addIngredientForm extends StatelessWidget {
     key: _formKey,
     child: Column(
       children: [
-        general_textfield(label: 'Nome do ingrediente', controler: nameController),
+        general_textfield(label: 'Nome do ingrediente', controler: nameController, limit: 40),
         SizedBox(height: 20),
-        split_textfield('Kcal', 'Carboidratos (g)', kcalController, carbController),
+        split_textfield('Kcal', 'Carboidratos (g)', kcalController, carbController, 4),
         SizedBox(height: 20),
-        split_textfield('Proteínas (g)', 'Gorduras (g)', protController, fatController),
+        split_textfield('Proteínas (g)', 'Gorduras (g)', protController, fatController, 4),
         SizedBox(height: 20),
-        general_textfield(label: 'Preço (Kg)', controler:  priceController, digitOnly: true),
+        general_textfield(label: 'Preço (Kg)', controler:  priceController, digitOnly: true, limit: 5),
         SizedBox(height: 20),
         confirmar_button('Confirmar', () {
           if (_formKey.currentState!.validate()) {
@@ -863,7 +891,7 @@ class _AddRecipeForm extends State<AddRecipeForm> {
       key: _formKey,
       child: Column(
         children: [
-          general_textfield(label: 'Nome da receita', controler: nameController),
+          general_textfield(label: 'Nome da receita', controler: nameController, limit: 30),
           SizedBox(height: 20),
           FutureBuilder(future: _future, builder: 
           (context, snapshot){

@@ -18,7 +18,7 @@ class _add_ingredientState extends State<add_ingredient> {
       ),
       body: Center(
         child: Container(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(
             children: [
               Icon(Icons.eco, size: 200),

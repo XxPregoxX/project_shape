@@ -45,29 +45,34 @@ class _recipeState extends State<recipe> {
       ),
       body: Center(
         child: Container(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
+              Column(
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: Recipe))).then((value) async{
+                          update_recipe();
+                        });
+                      }, icon: Icon(Icons.mode_edit,  color: Colors.white)),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: (){
+                        delete_confirmation(context, delete_recipe);
+                      }, icon: Icon(Icons.delete, color: Colors.white))
+                    ],
+                  ),
                   titleText(Recipe['name']),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => add_recipe(recipeData: Recipe))).then((value) async{
-                      update_recipe();
-                    });
-                  }, icon: Icon(Icons.mode_edit,  color: Colors.white)),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: (){
-                    delete_confirmation(context, delete_recipe);
-                  }, icon: Icon(Icons.delete, color: Colors.white))
                 ],
               ),
               SizedBox(height: 20),
