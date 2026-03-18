@@ -7,15 +7,26 @@ import 'package:project_shape/functions.dart';
 import 'package:project_shape/recipe.dart';
 
 Widget titleText(String text) {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-    child: Text(
+  return Text(
       text,
       textAlign: TextAlign.center,
       softWrap: true,
       style: const TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.bold,
+      ),
+    );
+}
+
+Widget subtitleText(String text) {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(0, 3, 0, 3),
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      softWrap: true,
+      style: const TextStyle(
+        fontSize: 22,
       ),
     ),
   );
@@ -172,7 +183,10 @@ Widget ingredient_card(BuildContext context, Map<String, dynamic> ingredient, [V
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Flexible(
-                  child: Text('$name', style: TextStyle(
+                  child: Text('$name', 
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
                     fontSize: 20,
                   ),
                   softWrap: true,),
@@ -240,8 +254,9 @@ Widget goal_card(Map goal){
   double fats = goal['fats'];
   double cost = goal['cost'];
   double weight = goal['weight'];
+  String created_at = Profile().formatDate(goal['created_at']);
   return Container(
-    padding: const EdgeInsets.fromLTRB(12, 14, 12, 6),
+    padding: const EdgeInsets.fromLTRB(6, 2, 6, 6),
     margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 7),
     width: double.infinity,
     decoration: BoxDecoration(
@@ -249,15 +264,24 @@ Widget goal_card(Map goal){
     ),
     child: Column(
       children: [
+        Align(
+          alignment: Alignment.topRight,
+          child: Text(
+            created_at,
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('${weight.round()} KG', style: TextStyle(
-              fontSize: 15
+            Text('Peso: ${weight.round()} KG', style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold
             ),),
             SizedBox(width: 20),
-            Text('Gasto: ${cost.round()} R\$', style: TextStyle(
-              fontSize: 15
+            Text('Orçamento: ${cost.round()} R\$', style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold
             ),),
           ],
         ),
@@ -358,6 +382,7 @@ class addConsumed extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
+                      isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Selecione',
                         enabledBorder: OutlineInputBorder(
@@ -370,7 +395,9 @@ class addConsumed extends StatelessWidget {
                       items: List.generate(items.length, (index) {
                         return DropdownMenuItem<int>(
                           value: index,
-                          child: Text(items[index]['name']),
+                          child: Text(items[index]['name'], 
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,),
                         );
                       }),
                         validator: (value) {
@@ -429,6 +456,11 @@ class editProfile extends StatelessWidget {
   final TextEditingController heightController;
   final _formKey = GlobalKey<FormState>();
 
+  String clean_date(String date) {
+  String clean = date.replaceAll('/', '');
+  return clean;
+}
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -443,16 +475,16 @@ class editProfile extends StatelessWidget {
             children: [
               Text('Editar Perfil'),
               SizedBox(height: 20),
-              general_textfield(label: 'Nome', controler: nameController),
+              general_textfield(label: 'Nome', controler: nameController, limit: 30),
               SizedBox(height: 20),
               Container(
                 width: double.infinity,
                 height: 50,
                 child: Row(
                   children: [
-                    Expanded(child: general_textfield(label: 'Nascimento', controler: birthController, digitOnly: true)),
+                    Expanded(child: date_picker(label: 'Data de Nascimento', controler: birthController, context: context)),
                     SizedBox(width: 10),
-                    Expanded(child: general_textfield(label: 'Altura (cm)', controler: heightController, digitOnly: true)),
+                    Expanded(child: general_textfield(label: 'Altura (cm)', controler: heightController, digitOnly: true, limit: 3)),
                   ],
                 ),
               ),
@@ -462,7 +494,7 @@ class editProfile extends StatelessWidget {
                   return;
                 }
                 String name = nameController.text;
-                String birth = birthController.text;
+                String birth = clean_date(birthController.text);
                 double height = double.parse(heightController.text);
                 Profile().update(name, height, birth).then((_) {
                   Navigator.pop(context, true);
@@ -507,11 +539,11 @@ class addGoal extends StatelessWidget {
             children: [
               Text('Adicionar Meta'),
               SizedBox(height: 20),
-              split_textfield('Peso(KG)', 'Custo (R\$)', weightController, costController),
+              split_textfield('Peso(KG)', 'Custo (R\$)', weightController, costController, 5),
               SizedBox(height: 20),
-              split_textfield('Calorias', 'Proteínas (g)', caloriesController, proteinController),
+              split_textfield('Calorias', 'Proteínas (g)', caloriesController, proteinController, 5),
               SizedBox(height: 20),
-              split_textfield('Carboidratos (g)', 'Gorduras (g)', carbsController, fatsController),
+              split_textfield('Carboidratos (g)', 'Gorduras (g)', carbsController, fatsController, 5),
               SizedBox(height: 20),
               TextButton(onPressed: (){
                 if (!(_formKey.currentState?.validate() ?? false)) {
@@ -538,7 +570,7 @@ class addGoal extends StatelessWidget {
 Widget day_grid(Map day){
   Widget gridblock(dynamic child){ 
     return Container(
-      width: 70,
+      width: 100,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white),
       ),
@@ -551,28 +583,34 @@ Widget day_grid(Map day){
       );
   }
 
-  return Column(
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          gridblock(day['calories_goal'].round()),
-          gridblock(day['protein_goal'].round()),
-          gridblock(day['carbs_goal'].round()),
-          gridblock(day['fats_goal'].round()),
-          gridblock(day['cost_goal'])
-        ],
-      ),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          gridblock(day['calories_consumed'].round()),
-          gridblock(day['protein_consumed'].round()),
-          gridblock(day['carbs_consumed'].round()),
-          gridblock(day['fats_consumed'].round()),
-          gridblock(day['costs'])
-        ],
-      ),
+        Text('Calorias'),
+        Text('Proteinas'),
+        Text('Carboidratos'),
+        Text('Gorduras'),
+        Text('Custo'),
+      ],),
+      Column(children: [
+        Text('Meta'),
+        gridblock(day['calories_goal'].round()),
+        gridblock(day['protein_goal'].round()),
+        gridblock(day['carbs_goal'].round()),
+        gridblock(day['fats_goal'].round()),
+        gridblock(day['cost_goal']),
+      ],),
+      Column(children: [
+        Text('Consumido'),
+        gridblock(day['calories_consumed'].round()),
+        gridblock(day['protein_consumed'].round()),
+        gridblock(day['carbs_consumed'].round()),
+        gridblock(day['fats_consumed'].round()),
+        gridblock(day['costs'])
+      ],),
     ],
   );
 }
@@ -600,7 +638,7 @@ Future<Widget> consumed_card(BuildContext context, List consumed, VoidCallback a
       children: [
         Row(
           children: [
-            Text('${item['name']} ${(item['price'] * factor)} R\$', style: TextStyle(
+            Text('${item['name']} ${(item['price'] * factor).toStringAsFixed(2)} R\$', style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),),
@@ -671,7 +709,47 @@ Widget general_textfield({required String label, required TextEditingController 
   );
 }
 
-Widget value_textfield({ required String label, required TextEditingController controler}){
+date_picker({required String label, required TextEditingController controler,required BuildContext context}){
+  if (controler.text.isNotEmpty){
+  String dia = controler.text.substring(0, 2);
+  String mes = controler.text.substring(2, 4);
+  String ano = controler.text.substring(4, 8);
+  controler.text = '$dia/$mes/$ano';
+  }
+  return TextField(
+  readOnly: true,
+  controller: controler,
+  onTap: () async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      String data =
+          '${picked.day.toString().padLeft(2, '0')}/'
+          '${picked.month.toString().padLeft(2, '0')}/'
+          '${picked.year}';
+      controler.text = data;
+    }
+  },
+  decoration: InputDecoration(
+      labelText: label,
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+);
+}
+
+Widget value_textfield({ required String label, required TextEditingController controler, int? limit}){
   return TextFormField(
     controller: controler,
     validator: (value) {
@@ -682,6 +760,7 @@ Widget value_textfield({ required String label, required TextEditingController c
           }
           return null;
           },
+    maxLength: limit,
     keyboardType:TextInputType.number,
     inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
     decoration: InputDecoration(
@@ -698,10 +777,10 @@ Widget value_textfield({ required String label, required TextEditingController c
       horizontal: 3,
       vertical: 5,
     ),
+    counterText: '',
     ),
   );
 }
-
 Widget split_textfield(String label1, String label2, TextEditingController controler1, TextEditingController controller2, [int limit = 0]){
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -768,7 +847,7 @@ class addIngredientForm extends StatelessWidget {
         SizedBox(height: 20),
         split_textfield('Proteínas (g)', 'Gorduras (g)', protController, fatController, 4),
         SizedBox(height: 20),
-        general_textfield(label: 'Preço (Kg)', controler:  priceController, digitOnly: true, limit: 5),
+        general_textfield(label: 'Preço (P/Kg)', controler:  priceController, digitOnly: true, limit: 5),
         SizedBox(height: 20),
         confirmar_button('Confirmar', () {
           if (_formKey.currentState!.validate()) {
@@ -977,6 +1056,7 @@ class GeneralDropdown extends StatelessWidget {
       return Column(
       children: [
         DropdownButtonFormField<int>(
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: 'Ingrediente',
           enabledBorder: OutlineInputBorder(
@@ -989,7 +1069,11 @@ class GeneralDropdown extends StatelessWidget {
         items: List.generate(ingredients_number, (index) {
           return DropdownMenuItem<int>(
             value: index,
-            child: Text(ingredients[index]['name']),
+            child: Text(
+              ingredients[index]['name'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              ),
           );
         }),
         onChanged: (value) {
@@ -1007,16 +1091,22 @@ Widget ingredient_added_row(String name, TextEditingController controller, size)
     child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: Text(name, style: TextStyle(
-              fontSize: 20,
-            ),),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child: Text(name, 
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis, 
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+            ),
           ),
           SizedBox(
             width: size,
             height: 45,
-            child: value_textfield(label: 'Peso (g)', controler: controller),
+            child: value_textfield(label: 'Peso (g)', controler: controller, limit: 4),
           ),
         ],
       ),

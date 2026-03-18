@@ -257,6 +257,7 @@ class Days{
       DateTime lastDate = DateTime.parse(lastDay!['created_at']);
       int diff = Daydiff(DateTime.now(), lastDate);
       for (int i = 1; i <= diff; i++){
+        print('algo2');
         DateTime newDate = lastDate.add(Duration(days: i));
         String dayId = normalize(newDate).toString().split(' ').first.replaceAll('-', '');
         insert(dayId, goals['cost'], goals['calories'], goals['protein'], goals['carbs'], goals['fats'], newDate.toIso8601String());
@@ -467,4 +468,34 @@ class Profile{
     final db = await DatabaseHelper.database;
     return await db.query('goals', orderBy: 'created_at DESC');
   }
+
+  int calcAge(String date) {
+  String adjustedDate = date.padLeft(8, '0');
+
+  int day = int.parse(adjustedDate.substring(0, 2));
+  int month = int.parse(adjustedDate.substring(2, 4));
+  int year = int.parse(adjustedDate.substring(4, 8));
+
+  DateTime birth = DateTime(year, month, day);
+  DateTime today = DateTime.now();
+
+  int age = today.year - birth.year;
+
+  if (today.month < birth.month ||
+      (today.month == birth.month && today.day < birth.day)) {
+    age--;
+  }
+
+  return age;
+}
+
+String formatDate(String dataIso) {
+  DateTime date = DateTime.parse(dataIso);
+
+  String day = date.day.toString().padLeft(2, '0');
+  String month = date.month.toString().padLeft(2, '0');
+  String year = date.year.toString();
+
+  return '$day/$month/$year';
+}
 }

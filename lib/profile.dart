@@ -25,7 +25,7 @@ class _profileState extends State<profile> {
     return Scaffold(
       body: Center(
         child: Container(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           child: Column(
             children: [
               SizedBox(height: 40),
@@ -34,21 +34,35 @@ class _profileState extends State<profile> {
                   final profile = snapshot.data as Map;
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Nome: ${profile['name']}'),
-                          IconButton(onPressed: () => editProfile(context, [profile['name'], profile['birth_date'], profile['height'].toString()]), icon: Icon(Icons.mode_edit, color: Colors.white))
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Altura: ${profile['height']}'),
-                          Text('Data de nascimento: ${profile['birth_date']}')
-                        ],
-                      )
+                           mainAxisAlignment: MainAxisAlignment.center,
+                           crossAxisAlignment: CrossAxisAlignment.center,
+                           children: [
+                             titleText('${profile['name']}'),
+                             IconButton(
+                                 padding: EdgeInsets.zero,
+                                 constraints: const BoxConstraints(),
+                                 onPressed: () => editProfile(
+                                   context,
+                                   [profile['name'], profile['birth_date'], profile['height'].toString()]
+                                 ),
+                                 icon: const Icon(Icons.mode_edit, color: Colors.white, size: 25),
+                             ),
+                           ],
+                         ),
+                      SizedBox(height: 20,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            subtitleText('Altura: ${profile['height']}'),
+                            SizedBox(width: 50,),
+                            subtitleText('Idade: ${Profile().calcAge(profile['birth_date'])}')
+                          ],
+                        ),
                     ],
                   );
                 } else if (snapshot.hasError) {
@@ -63,7 +77,12 @@ class _profileState extends State<profile> {
                 if (snapshot.hasData) {
                   final goals = snapshot.data as List<Map>;
                   return Column(
-                    children: goals.map((goal) => goal_card(goal)).toList(),
+                    children: [
+                      titleText('Metas'),
+                      Column(
+                        children: goals.map((goal) => goal_card(goal)).toList(),
+                      ),
+                    ],
                   );
                 } else if (snapshot.hasError) {
                   return Text('Erro ao carregar metas');
