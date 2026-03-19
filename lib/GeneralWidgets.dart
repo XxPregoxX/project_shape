@@ -6,13 +6,13 @@ import 'package:project_shape/day.dart';
 import 'package:project_shape/functions.dart';
 import 'package:project_shape/recipe.dart';
 
-Widget titleText(String text) {
+Widget titleText(String text, [double fontsize = 0]) {
   return Text(
       text,
       textAlign: TextAlign.center,
       softWrap: true,
-      style: const TextStyle(
-        fontSize: 26,
+      style: TextStyle(
+        fontSize: fontsize > 0 ? fontsize : 26,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -409,7 +409,7 @@ class addConsumed extends StatelessWidget {
                         selected.addAll(items[value!]);
                       },
                     ),
-                    general_textfield(label: 'Quantidade (g)', controler: controller)
+                    general_textfield(label: 'Quantidade (g)', controler: controller, limit: 5)
                   ],
                 ),
               );
@@ -570,11 +570,13 @@ class addGoal extends StatelessWidget {
 Widget day_grid(Map day){
   Widget gridblock(dynamic child){ 
     return Container(
-      width: 100,
+      width: 120,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white),
       ),
-      child: Text(child.toString(), 
+      child: Text(child.toString(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis, 
         textAlign: TextAlign.center,
         style: TextStyle(
             fontSize: 18,
@@ -585,18 +587,20 @@ Widget day_grid(Map day){
 
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.end,
     children: [
       Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-        Text('Calorias'),
-        Text('Proteinas'),
-        Text('Carboidratos'),
-        Text('Gorduras'),
-        Text('Custo'),
+        gridblock('Calorias'),
+        gridblock('Proteinas'),
+        gridblock('Carboidratos'),
+        gridblock('Gorduras'),
+        gridblock('Custo(R\$)'),
       ],),
       Column(children: [
-        Text('Meta'),
+        gridblock('Meta'),
         gridblock(day['calories_goal'].round()),
         gridblock(day['protein_goal'].round()),
         gridblock(day['carbs_goal'].round()),
@@ -604,7 +608,7 @@ Widget day_grid(Map day){
         gridblock(day['cost_goal']),
       ],),
       Column(children: [
-        Text('Consumido'),
+        gridblock('Consumido'),
         gridblock(day['calories_consumed'].round()),
         gridblock(day['protein_consumed'].round()),
         gridblock(day['carbs_consumed'].round()),
@@ -655,18 +659,30 @@ Future<Widget> consumed_card(BuildContext context, List consumed, VoidCallback a
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Kcal: ${(item['calories'] * factor).round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Prot: ${(item['protein'] * factor).round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Carb: ${(item['carbs'] * factor).round()}', style: TextStyle(
-              fontSize: 15
-            ),),
-            Text('Gord: ${(item['fats'] * factor).round()}', style: TextStyle(
-              fontSize: 15
-            ),),
+            Text('Kcal: ${(item['calories'] * factor).round()}', 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15
+              ),),
+            Text('Prot: ${(item['protein'] * factor).round()}', 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15
+              ),),
+            Text('Carb: ${(item['carbs'] * factor).round()}', 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15
+              ),),
+            Text('Gord: ${(item['fats'] * factor).round()}', 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15
+              ),),
           ],
         ),
       ],
@@ -1010,7 +1026,7 @@ class _AddRecipeForm extends State<AddRecipeForm> {
             controller: obsController,
             maxLines: 7,
             decoration: InputDecoration(
-              labelText: 'Observações',
+              labelText: 'Descrição',
               alignLabelWithHint: true,
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.white),

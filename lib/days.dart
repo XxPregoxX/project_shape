@@ -32,7 +32,15 @@ class _daysState extends State<days> {
           width: screenWidth * 0.8,
           child: FutureBuilder(future: getDays(), builder: (context, snapshot){
             if (snapshot.data != null && (snapshot.data as List).isEmpty) {
-              return Center(child: Text('Nenhuma meta encontrada. Adicione uma meta e reinicie o aplicativo para começar a registrar seus dias!'));
+              return Center(child: 
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  titleText('Nenhuma meta encontrada'),
+                  SizedBox(height: 20),
+                  subtitleText('Adicione uma meta e reinicie o aplicativo para começar a registrar seus dias!')
+                ],
+              ));
             } else if(snapshot.hasData){
               List<Map<String, dynamic>> days = snapshot.data as List<Map<String, dynamic>>;
               return ListView.builder(

@@ -56,26 +56,29 @@ class _dayState extends State<day> {
       ),
       body: Center(
         child: Container(
+          height: double.infinity,
           width: screenWidth * 0.9,
-          child: Column(
-            children: [
-              day_grid(Day),
-              SizedBox(height: 20),
-              FutureBuilder(future: buildCards(), builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Erro ao carregar card: ${snapshot.error}');
-                } else {
-                  return Column(
-                    children: snapshot.data!,
-                  );
-                }
-              }),             
-              ElevatedButton(onPressed: () {
-                _add_consumed();
-              }, child: Text('Adicionar refeição')),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                day_grid(Day),
+                SizedBox(height: 20),
+                FutureBuilder(future: buildCards(), builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Erro ao carregar card: ${snapshot.error}');
+                  } else {
+                    return Column(
+                      children: snapshot.data!,
+                    );
+                  }
+                }),             
+                ElevatedButton(onPressed: () {
+                  _add_consumed();
+                }, child: Text('Adicionar refeição')),
+              ],
+            ),
           ),
         ),
       ),
