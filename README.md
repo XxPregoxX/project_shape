@@ -1,16 +1,13 @@
-# project_shape
+# Project Shape
 
-A new Flutter project.
+### Descrição
 
-## Getting Started
+Este projeto é um aplicativo desenvolvido com o objetivo de auxiliar no acompanhamento de uma rotina de dieta de forma simples e prática.
 
-This project is a starting point for a Flutter application.
+O app permite o cadastro de ingredientes com seus respectivos valores nutricionais e custo, além da criação de receitas a partir desses ingredientes, calculando automaticamente informações como calorias, proteínas, carboidratos, gorduras e preço total.
 
-A few resources to get you started if this is your first Flutter project:
+Também é possível definir metas diárias personalizadas, incluindo ingestão de calorias, macronutrientes e limite de gastos. Com base nisso, o usuário pode registrar o consumo ao longo do dia, acompanhando em tempo real o progresso em relação às metas definidas.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+O sistema organiza os dados por dia, permitindo visualizar o histórico de consumo e facilitando o controle alimentar ao longo do tempo.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+O foco do projeto é oferecer uma solução leve, funcional e offline, priorizando praticidade e autonomia no gerenciamento da dieta.
