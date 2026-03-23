@@ -15,7 +15,7 @@ Para incluir o consumo diario você deve realizar o cadastro de ingredientes ou 
 O sistema organiza os dados por dia, permitindo visualizar o histórico de consumo e facilitando o controle alimentar ao longo do tempo.
 
 
-📲 [Baixar APK](https://github.com/XxPregoxX/project_shape/blob/main/app-release.apk?raw=true)
+📲 [Baixar APK](https://github.com/XxPregoxX/project_shape/raw/main/app-release.apk)
 
 
 
