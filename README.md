@@ -14,4 +14,8 @@ Para incluir o consumo diario você deve realizar o cadastro de ingredientes ou 
 
 O sistema organiza os dados por dia, permitindo visualizar o histórico de consumo e facilitando o controle alimentar ao longo do tempo.
 
+<<<<<<< HEAD
 ### Instalação
+=======
+### Instalação
+>>>>>>> 6f3e153 (adicionado readme)
