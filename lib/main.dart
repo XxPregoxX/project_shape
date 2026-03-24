@@ -19,26 +19,28 @@ class MyApp extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Meu app',
-      theme: ThemeData(
-      colorScheme: const ColorScheme.dark(
-      surface: Colors.black,
-      primary: Colors.white,
-    ),
-    scaffoldBackgroundColor: Colors.black,
-    useMaterial3: true, // verificar depois
+    return SafeArea(
+      child: MaterialApp(
+        title: 'Meu app',
+        theme: ThemeData(
+        colorScheme: const ColorScheme.dark(
+        surface: Colors.black,
+        primary: Colors.white,
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => MainLayout(),
-        '/meals': (context) => recipes(),
-        '/add_recipe': (context) => add_recipe(),
-        '/ingredients': (context) => ingredients(),
-        '/add_ingredient': (context) => add_ingredient(),
-        '/days': (context) => days(),
-        '/profile': (context) => profile(),
-      },
+      scaffoldBackgroundColor: Colors.black,
+      useMaterial3: true, // verificar depois
+        ),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => MainLayout(),
+          '/meals': (context) => recipes(),
+          '/add_recipe': (context) => add_recipe(),
+          '/ingredients': (context) => ingredients(),
+          '/add_ingredient': (context) => add_ingredient(),
+          '/days': (context) => days(),
+          '/profile': (context) => profile(),
+        },
+      ),
     );
   }
 }
