@@ -825,67 +825,95 @@ Widget confirmar_button(String text, VoidCallback onPressed){
   );
 }
 
-class addIngredientForm extends StatelessWidget {
-  addIngredientForm({super.key, this.ingredientData})
-    : nameController = TextEditingController(
-          text: ingredientData?['name'] ?? ''),
-      kcalController = TextEditingController(
-          text: ingredientData?['calories']?.round().toString() ?? ''),
-      carbController = TextEditingController(
-          text: ingredientData?['carbs']?.round().toString() ?? ''),
-      protController = TextEditingController(
-          text: ingredientData?['protein']?.round().toString() ?? ''),
-      fatController = TextEditingController(
-          text: ingredientData?['fats']?.round().toString() ?? ''),
-      priceController = TextEditingController(
-          text: ingredientData?['price']?.round().toString() ?? '');
+class AddIngredientForm extends StatefulWidget {
+  const AddIngredientForm({super.key, this.ingredientData});
 
   final Map<String, dynamic>? ingredientData;
 
+  @override
+  State<AddIngredientForm> createState() => _AddIngredientFormState();
+}
+
+class _AddIngredientFormState extends State<AddIngredientForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController nameController;
-  final TextEditingController kcalController;
-  final TextEditingController carbController;
-  final TextEditingController protController;
-  final TextEditingController fatController;
-  final TextEditingController priceController;
+  late TextEditingController nameController;
+  late TextEditingController kcalController;
+  late TextEditingController carbController;
+  late TextEditingController protController;
+  late TextEditingController fatController;
+  late TextEditingController priceController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    nameController = TextEditingController(
+        text: widget.ingredientData?['name'] ?? '');
+
+    kcalController = TextEditingController(
+        text: widget.ingredientData?['calories']?.round().toString() ?? '');
+
+    carbController = TextEditingController(
+        text: widget.ingredientData?['carbs']?.round().toString() ?? '');
+
+    protController = TextEditingController(
+        text: widget.ingredientData?['protein']?.round().toString() ?? '');
+
+    fatController = TextEditingController(
+        text: widget.ingredientData?['fats']?.round().toString() ?? '');
+
+    priceController = TextEditingController(
+        text: widget.ingredientData?['price']?.round().toString() ?? '');
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    kcalController.dispose();
+    carbController.dispose();
+    protController.dispose();
+    fatController.dispose();
+    priceController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-    key: _formKey,
-    child: Column(
-      children: [
-        general_textfield(label: 'Nome do ingrediente', controler: nameController, limit: 40),
-        SizedBox(height: 20),
-        split_textfield('Kcal', 'Carboidratos (g)', kcalController, carbController, 4),
-        SizedBox(height: 20),
-        split_textfield('Proteínas (g)', 'Gorduras (g)', protController, fatController, 4),
-        SizedBox(height: 20),
-        general_textfield(label: 'Preço (P/Kg)', controler:  priceController, digitOnly: true, limit: 5),
-        SizedBox(height: 20),
-        confirmar_button('Confirmar', () {
-          if (_formKey.currentState!.validate()) {
-            double kcal = double.parse(kcalController.text);
-            double carb = double.parse(carbController.text);
-            double prot = double.parse(protController.text);
-            double fat = double.parse(fatController.text);
-            double price = double.parse(priceController.text);
-            String name = nameController.text;
-            if (ingredientData != null) {
-              Ingredients().update(ingredientData!['id'], name, price, kcal, prot, carb, fat).then((_) {
-                Navigator.pop(context, true);
-              });
-              return;
+      key: _formKey,
+      child: Column(
+        children: [
+          general_textfield(label: 'Nome do ingrediente', controler: nameController, limit: 40),
+          SizedBox(height: 20),
+          split_textfield('Kcal', 'Carboidratos (g)', kcalController, carbController, 4),
+          SizedBox(height: 20),
+          split_textfield('Proteínas (g)', 'Gorduras (g)', protController, fatController, 4),
+          SizedBox(height: 20),
+          general_textfield(label: 'Preço (P/Kg)', controler: priceController, digitOnly: true, limit: 5),
+          SizedBox(height: 20),
+          confirmar_button('Confirmar', () {
+            if (_formKey.currentState!.validate()) {
+              double kcal = double.parse(kcalController.text);
+              double carb = double.parse(carbController.text);
+              double prot = double.parse(protController.text);
+              double fat = double.parse(fatController.text);
+              double price = double.parse(priceController.text);
+              String name = nameController.text;
+
+              if (widget.ingredientData != null) {
+                Ingredients().update(widget.ingredientData!['id'], name, price, kcal, prot, carb, fat)
+                    .then((_) => Navigator.pop(context, true));
+                return;
+              }
+
+              Ingredients().insert(name, price, kcal, prot, carb, fat);
+              Navigator.pop(context, true);
             }
-            Ingredients().insert(name, price, kcal, prot, carb, fat);
-            Navigator.pop(context, true);
-          }
-        }),
-      ],
-    ),
-  );
+          }),
+        ],
+      ),
+    );
   }
 }
 

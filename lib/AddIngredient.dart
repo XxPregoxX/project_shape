@@ -22,7 +22,7 @@ class _add_ingredientState extends State<add_ingredient> {
           child: Column(
             children: [
               Icon(Icons.eco, size: 200),
-              addIngredientForm(ingredientData: widget.ingredientData)
+              AddIngredientForm(ingredientData: widget.ingredientData)
             ],
           ),
         ),
