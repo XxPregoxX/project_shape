@@ -6,6 +6,13 @@ Este projeto é um aplicativo desenvolvido com o objetivo de auxiliar no acompan
 
 O foco do projeto é oferecer uma solução leve, funcional e offline, priorizando praticidade e autonomia no gerenciamento da dieta.
 
+<p>
+  <img src="https://github.com/user-attachments/assets/91440e11-c3ce-4934-bcbd-bfde764984b1" height="500"/>
+  <img src="https://github.com/user-attachments/assets/00cfd203-747e-42f7-9e9c-2b7cfa46dd9f" height="500"/>
+</p>
+
+
+
 ### Como funciona
 
 Primeiro você define uma meta diária, incluindo peso, ingestão de calorias, macronutrientes e limite de gastos. Com isso, você pode registrar o consumo ao longo do dia, acompanhando em tempo real o progresso em relação às metas definidas.
