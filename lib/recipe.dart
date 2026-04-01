@@ -83,71 +83,73 @@ class _recipeState extends State<recipe> {
       body: Center(
         child: Container(
           width: screenWidth * 0.9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              titleText(Recipe['name'], 30),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  infoText('kcal:', Recipe['calories'].round().toString()),
-                  infoText('Prot:', Recipe['protein'].round().toString()),
-                ],
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  infoText('Carb:', Recipe['carbs'].round().toString()),
-                  infoText('Gord:', Recipe['fats'].round().toString()),
-                ],
-              ),
-              SizedBox(height: 10),
-              infoText('Custo:', '${Recipe['price'].toStringAsFixed(2)} R\$'),
-              SizedBox(height: 15),
-              FutureBuilder(future: get_ingredients(), builder: (context, snapshot){
-                return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                titleText(Recipe['name'], 30),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    subtitleText('Ingredientes'),
-                    for(List a in ingredients) Container(
-                      padding: EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 1)
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(a[0], style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold
-                          ),),
-                          Text('${a[1].round().toString()}g', style: TextStyle(
-                            fontSize: 20,
-                          ),)
-                        ],
-                      ),
-                    ),
-                  ]
+                    infoText('kcal:', Recipe['calories'].round().toString()),
+                    infoText('Prot:', Recipe['protein'].round().toString()),
+                  ],
                 ),
-              );
-              }),
-              subtitleText('Descrição'),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    infoText('Carb:', Recipe['carbs'].round().toString()),
+                    infoText('Gord:', Recipe['fats'].round().toString()),
+                  ],
                 ),
-                child: Text(Recipe['description'],
-                style: const TextStyle(
-                  fontSize: 17,
-                ),),
-              )
-            ],
+                SizedBox(height: 10),
+                infoText('Custo:', '${Recipe['price'].toStringAsFixed(2)} R\$'),
+                SizedBox(height: 15),
+                FutureBuilder(future: get_ingredients(), builder: (context, snapshot){
+                  return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      subtitleText('Ingredientes'),
+                      for(List a in ingredients) Container(
+                        padding: EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 1)
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(a[0], style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold
+                            ),),
+                            Text('${a[1].round().toString()}g', style: TextStyle(
+                              fontSize: 20,
+                            ),)
+                          ],
+                        ),
+                      ),
+                    ]
+                  ),
+                );
+                }),
+                subtitleText('Descrição'),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(15, 10, 15, 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white),
+                  ),
+                  child: Text(Recipe['description'],
+                  style: const TextStyle(
+                    fontSize: 17,
+                  ),),
+                )
+              ],
+            ),
           ),
         ),
       )

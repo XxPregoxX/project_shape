@@ -20,11 +20,13 @@ class _add_recipeState extends State<add_recipe> {
       body: Center(
         child: Container(
           width: screenWidth * 0.8,
-          child: Column(
-            children: [
-              Icon(Icons.restaurant, size: 200),
-              AddRecipeForm(recipeData: widget.recipeData),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Icon(Icons.restaurant, size: 200),
+                AddRecipeForm(recipeData: widget.recipeData),
+              ],
+            ),
           ),
         ),
       ),
