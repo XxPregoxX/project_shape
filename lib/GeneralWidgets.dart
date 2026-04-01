@@ -927,6 +927,7 @@ class AddRecipeForm extends StatefulWidget {
 
 class _AddRecipeForm extends State<AddRecipeForm> {
   late Future<dynamic> _future;
+  final _formKey = GlobalKey<FormState>();
   List selecteds = [];
   late TextEditingController nameController;
   late TextEditingController obsController;
@@ -939,24 +940,42 @@ class _AddRecipeForm extends State<AddRecipeForm> {
     _future = Ingredients().getAllNonDeleted();
 
     nameController = TextEditingController(
-    text: widget.recipeData != null
-        ? widget.recipeData!['name']
-        : '',
+      text: widget.recipeData?['name'] ?? '',
     );
+
     obsController = TextEditingController(
-      text: widget.recipeData != null
-          ? widget.recipeData!['description']
-          : '',
+      text: widget.recipeData?['description'] ?? '',
     );
+
     if (widget.recipeData != null) {
       edit = true;
       id = widget.recipeData!['id'];
-      Map ingredients = jsonDecode(widget.recipeData!['ingredients']);
-      ingredients.forEach((key, value) async{
-        Map ingredient = await Ingredients().getByid(int.parse(key));
-        select_ingredient(SelectedIngredient(id: int.parse(key), name: ingredient['name'], controller: TextEditingController(text: value.round().toString())));
-      });
+
+      loadIngredients();
     }
+  }
+
+  Future<void> loadIngredients() async {
+    Map ingredients = jsonDecode(widget.recipeData!['ingredients']);
+    List temp = [];
+
+    for (var entry in ingredients.entries) {
+      Map ingredient = await Ingredients().getByid(int.parse(entry.key));
+
+      temp.add(
+        SelectedIngredient(
+          id: int.parse(entry.key),
+          name: ingredient['name'],
+          controller: TextEditingController(
+            text: entry.value.round().toString(),
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      selecteds = temp;
+    });
   }
 
   void reload() {
@@ -1007,9 +1026,6 @@ class _AddRecipeForm extends State<AddRecipeForm> {
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-
-
     return Form(
       key: _formKey,
       child: Column(
